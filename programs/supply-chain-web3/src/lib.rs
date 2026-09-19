@@ -22,4 +22,20 @@ pub mod supply_chain_web3 {
     pub fn assign_role(ctx: Context<AssignRole>, wallet: Pubkey, role: Role) -> Result<()> {
         crate::instructions::assign_role::handle_assign_role(ctx, wallet, role)
     }
+
+    pub fn register_batch(
+        ctx: Context<RegisterBatch>,
+        batch_id: [u8; 16],
+        ingredient_name: String,
+        quantity: u64,
+        source_type: SourceType,
+    ) -> Result<()> {
+        crate::instructions::register_batch::handle_register_batch(
+            ctx,
+            batch_id,
+            ingredient_name,
+            quantity,
+            source_type,
+        )
+    }
 }

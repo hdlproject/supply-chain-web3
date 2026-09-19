@@ -4,4 +4,7 @@ use anchor_lang::prelude::*;
 pub enum ErrorCode {
     #[msg("Signer is not authorized to perform this action")]
     Unauthorized,
+
+    #[msg("Provided string exceeds maximum allowed length")]
+    StringTooLong,
 }
