@@ -1,9 +1,9 @@
-# Restaurant Ingredient Supply Chain — v1 Design
+# Restaurant Ingredient Supply Chain — v1
 
 ## Context
 
-PRD (`prd/v1_basic_functionality.md`) asked for a supply chain system with
-monitoring, with no further detail. Through brainstorming, the concrete
+Original ask: "I wanna create a supply chain system, including monitoring,
+etc, but I don't know where to start." Through brainstorming, the concrete
 domain was established: a restaurant sources ingredients from multiple
 supplier types (farmer, factory, traditional market, supermarket). A batch
 of ingredients travels through zero or more transit legs and warehouse
