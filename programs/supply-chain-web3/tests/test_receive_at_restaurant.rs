@@ -5,6 +5,7 @@ use {
         AccountDeserialize, InstructionData, ToAccountMetas,
     },
     litesvm::LiteSVM,
+    solana_clock::Clock,
     solana_keypair::Keypair,
     solana_message::{Message, VersionedMessage},
     solana_signer::Signer,
@@ -20,6 +21,9 @@ fn new_svm_with_admin() -> (LiteSVM, Keypair) {
         "/../deploy/supply_chain_web3.so"
     ));
     svm.add_program(supply_chain_web3::id(), bytes).unwrap();
+    let mut clock = svm.get_sysvar::<Clock>();
+    clock.unix_timestamp = 1_700_000_000;
+    svm.set_sysvar::<Clock>(&clock);
     svm.airdrop(&admin.pubkey(), 1_000_000_000).unwrap();
     (svm, admin)
 }
