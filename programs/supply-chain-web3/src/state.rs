@@ -52,3 +52,19 @@ pub struct Batch {
     pub created_at: i64,
     pub delivered_at: i64,
 }
+
+#[account]
+#[derive(InitSpace)]
+pub struct Movement {
+    pub batch: Pubkey,
+    pub carrier: Pubkey,
+    #[max_len(MAX_ID_LEN)]
+    pub courier_id: Option<String>,
+    #[max_len(MAX_ID_LEN)]
+    pub vehicle_id: Option<String>,
+    #[max_len(MAX_LOCATION_LEN)]
+    pub from_location: String,
+    #[max_len(MAX_LOCATION_LEN)]
+    pub to_location: String,
+    pub timestamp: i64,
+}

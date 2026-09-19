@@ -7,4 +7,9 @@ pub enum ErrorCode {
 
     #[msg("Provided string exceeds maximum allowed length")]
     StringTooLong,
+
+    #[msg("Batch has already been delivered")]
+    InvalidStatusTransition,
+    #[msg("courier_id and vehicle_id must both be set or both be empty")]
+    InvalidMovementInput,
 }
