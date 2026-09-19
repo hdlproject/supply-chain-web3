@@ -16,7 +16,12 @@
 - `anchor-lang` stays at version `1.2.0`; add the `init-if-needed` feature (needed for `assign_role` to be re-runnable by the admin).
 - Program id stays `5k3AeBoUR2LsjXT8XtddP9VfcnztLQyiK5YgYscPtReX` (`declare_id!` unchanged).
 - Bounded string lengths (from spec): `ingredient_name` max 64 bytes, `from_location`/`to_location` max 64 bytes, `courier_id`/`vehicle_id` max 32 bytes each.
-- Tests run via `anchor test` (not raw `cargo test`) — `Anchor.toml` has `skip_local_validator = true`, so `anchor test` builds the program (`anchor build`, producing `target/deploy/supply_chain_web3.so`) and then runs the `cargo test` script against `litesvm`, without needing a local validator.
+- **Build/test command (environment-specific override — supersedes the plan's "Run: `anchor test`" steps):** in this environment, `anchor build`/`anchor test` (default platform-tools `v1.57`, and the standalone `cargo build-sbf`'s own default `v1.52`) both produce a `.so` that `litesvm` 0.10.0 rejects at `svm.add_program()` with `InvalidAccountData` — reproduced even on the untouched pre-Task-1 counter scaffold, so it's a pre-existing local toolchain mismatch, not something any task's code causes. `anchor build --tools-version v2.3.2` also fails outright (rustc/sysroot error `E0463`). The verified-working recipe: build the program directly with platform-tools `v2.3.2`, then run tests as plain `cargo test` from the repo root — **not** `anchor build`/`anchor test`:
+  ```bash
+  (cd programs/supply-chain-web3 && cargo build-sbf --tools-version v2.3.2)
+  cargo test
+  ```
+  Re-run the first line whenever program code changes (it rebuilds `target/deploy/supply_chain_web3.so`); `cargo test` alone is enough after that if only test code changed.
 - The existing `Counter` template (`state::Counter`, `instructions::initialize`/`increment`, `constants::COUNTER_SEED`/`HELLO_WORLD_LAMPORTS`/`MAX_COUNT`, `error::ErrorCode::CounterOverflow`, `tests/test_initialize.rs`) is deleted, not kept alongside the new code.
 
 ---
