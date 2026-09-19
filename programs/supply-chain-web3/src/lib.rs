@@ -54,4 +54,8 @@ pub mod supply_chain_web3 {
             to_location,
         )
     }
+
+    pub fn receive_at_restaurant(ctx: Context<ReceiveAtRestaurant>) -> Result<()> {
+        crate::instructions::receive_at_restaurant::handle_receive_at_restaurant(ctx)
+    }
 }
