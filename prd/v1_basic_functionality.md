@@ -139,8 +139,10 @@ brainstorming without requiring an off-chain indexer for v1.
 Extend `error.rs`:
 - `Unauthorized` — signer's role doesn't match what the instruction
   requires (reused/renamed from the existing counter error of the same
-  name)
-- `RoleNotAssigned` — signer has no `RoleAssignment` account
+  name). A signer with no `RoleAssignment` account at all falls under this
+  case too, surfaced as Anchor's standard account-not-initialized failure
+  rather than a distinct error variant, since the account is a PDA derived
+  from the signer's own key and simply won't exist.
 - `InvalidStatusTransition` — movement logged or receipt attempted on an
   already-`Delivered` batch
 - `InvalidMovementInput` — `courier_id`/`vehicle_id` mismatched (one
