@@ -7,7 +7,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-supply_chain_web3 = "CrSedB5SZvbigMBAfQZRnd8Zwt3rFBktEDSZUEgRqLKM"
+supply_chain_web3 = "5k3AeBoUR2LsjXT8XtddP9VfcnztLQyiK5YgYscPtReX"
 
 [provider]
 cluster = "localnet"

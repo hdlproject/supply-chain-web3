@@ -9,7 +9,7 @@ pub use constants::*;
 pub use instructions::*;
 pub use state::*;
 
-declare_id!("CrSedB5SZvbigMBAfQZRnd8Zwt3rFBktEDSZUEgRqLKM");
+declare_id!("5k3AeBoUR2LsjXT8XtddP9VfcnztLQyiK5YgYscPtReX");
 
 #[program]
 pub mod supply_chain_web3 {
