@@ -1,8 +1,9 @@
- .PHONY: help build test validator deploy airdrop fmt lint clean idl web
+ .PHONY: help build test validator deploy airdrop fmt lint clean idl web stop-web
 
 PROGRAM_DIR := programs/supply-chain-web3
 PROGRAM_SO := target/deploy/supply_chain_web3.so
 TOOLS_VERSION := v2.3.2
+WEB_PORT := 3000
 
 help:
 	@echo "Targets:"
@@ -12,7 +13,8 @@ help:
 	@echo "  make deploy     - build, then deploy to localnet (needs 'make validator' running)"
 	@echo "  make airdrop    - airdrop 2 SOL to the configured wallet on localnet"
 	@echo "  make idl        - regenerate the Anchor IDL into app/src/idl/"
-	@echo "  make web        - run the frontend dev server (needs 'npm install' in app/ first)"
+	@echo "  make web        - stop any existing dev server on port $(WEB_PORT), then run the frontend dev server"
+	@echo "  make stop-web   - kill whatever is listening on port $(WEB_PORT)"
 	@echo "  make fmt        - cargo fmt"
 	@echo "  make lint       - cargo clippy"
 	@echo "  make clean      - cargo clean + remove test-ledger/"
@@ -45,7 +47,18 @@ idl:
 	mkdir -p app/src/idl
 	anchor idl build -o app/src/idl/supply_chain_web3.json -t app/src/idl/supply_chain_web3.ts
 
-web:
+# Scoped to whatever is actually bound to WEB_PORT (not a broad `pkill -f
+# "next dev"`, which would also kill unrelated next-dev processes on the
+# machine).
+stop-web:
+	@pid=$$(lsof -ti tcp:$(WEB_PORT)); \
+	if [ -n "$$pid" ]; then \
+		echo "Killing existing process on port $(WEB_PORT) (pid $$pid)"; \
+		kill $$pid; \
+		sleep 1; \
+	fi
+
+web: stop-web
 	cd app && npm run dev
 
 fmt:
