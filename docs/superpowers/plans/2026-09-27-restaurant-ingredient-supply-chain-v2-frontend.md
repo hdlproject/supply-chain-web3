@@ -9,6 +9,26 @@
 > tasks below give exact interfaces and decisions rather than re-deriving them
 > — implementers picking this up fresh should still be able to follow each
 > task's Files/Interfaces/Steps independently.
+>
+> **Status: complete.** Tasks 1–12 landed in two commits (IDL/Makefile, then
+> the full app). Task 13's live-validator walkthrough passed end to end —
+> demo-login and manual-login, register → transit movement → warehouse-stop
+> movement → receive, the batch detail timeline (courier/vehicle chips only
+> on the transit entry), unauthenticated redirect, and wrong-role redirect
+> — with zero server or browser-console errors. Two real bugs surfaced and
+> were fixed along the way, not assumed away: `#[constant]` on the `usize`
+> length constants broke `anchor idl build` (no `IdlBuild` impl for `usize`);
+> `@coral-xyz/anchor`'s `Wallet` class is unusable under Turbopack (its ESM
+> dist leaks CJS `exports.Wallet = require(...)` syntax) and was replaced
+> with a small local `KeypairWallet`. Also discovered empirically (via the
+> TS compiler, not assumed): Anchor's client auto-resolves any account whose
+> PDA seeds are fully derivable from constants/args/already-supplied
+> accounts — most `.accounts({...})` calls only pass the signer. The one
+> step not exercised: reassigning a demo account's role mid-session from a
+> *second* concurrent session, since a single browser profile's httpOnly
+> session cookie can't hold two accounts' sessions at once — covered
+> instead by the equivalent wrong-role-redirect check, which exercises the
+> same guard code path.
 
 **Goal:** Build the Next.js frontend described in `prd/v2_frontend.md` — login
 (password + 4 demo buttons), one dashboard per role (Admin/Source/Carrier/
