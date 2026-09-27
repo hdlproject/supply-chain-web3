@@ -1,0 +1,656 @@
+{
+  "address": "5k3AeBoUR2LsjXT8XtddP9VfcnztLQyiK5YgYscPtReX",
+  "metadata": {
+    "name": "supply_chain_web3",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "assign_role",
+      "discriminator": [
+        255,
+        174,
+        125,
+        180,
+        203,
+        155,
+        202,
+        131
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "role_assignment",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "wallet"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "wallet",
+          "type": "pubkey"
+        },
+        {
+          "name": "role",
+          "type": {
+            "defined": {
+              "name": "Role"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "initialize_config",
+      "discriminator": [
+        208,
+        127,
+        21,
+        1,
+        194,
+        190,
+        196,
+        70
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "log_movement",
+      "discriminator": [
+        42,
+        170,
+        70,
+        250,
+        120,
+        2,
+        199,
+        241
+      ],
+      "accounts": [
+        {
+          "name": "carrier",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "role_assignment",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "carrier"
+              }
+            ]
+          }
+        },
+        {
+          "name": "batch",
+          "writable": true
+        },
+        {
+          "name": "movement",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  111,
+                  118,
+                  101,
+                  109,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "batch"
+              },
+              {
+                "kind": "account",
+                "path": "batch.movement_count",
+                "account": "Batch"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "courier_id",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "vehicle_id",
+          "type": {
+            "option": "string"
+          }
+        },
+        {
+          "name": "from_location",
+          "type": "string"
+        },
+        {
+          "name": "to_location",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "receive_at_restaurant",
+      "discriminator": [
+        131,
+        136,
+        89,
+        228,
+        205,
+        51,
+        90,
+        103
+      ],
+      "accounts": [
+        {
+          "name": "restaurant",
+          "signer": true
+        },
+        {
+          "name": "role_assignment",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "restaurant"
+              }
+            ]
+          }
+        },
+        {
+          "name": "batch",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "register_batch",
+      "discriminator": [
+        255,
+        186,
+        59,
+        153,
+        95,
+        233,
+        143,
+        171
+      ],
+      "accounts": [
+        {
+          "name": "source",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "role_assignment",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "source"
+              }
+            ]
+          }
+        },
+        {
+          "name": "batch",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  98,
+                  97,
+                  116,
+                  99,
+                  104
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "batch_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "batch_id",
+          "type": {
+            "array": [
+              "u8",
+              16
+            ]
+          }
+        },
+        {
+          "name": "ingredient_name",
+          "type": "string"
+        },
+        {
+          "name": "quantity",
+          "type": "u64"
+        },
+        {
+          "name": "source_type",
+          "type": {
+            "defined": {
+              "name": "SourceType"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Batch",
+      "discriminator": [
+        156,
+        194,
+        70,
+        44,
+        22,
+        88,
+        137,
+        44
+      ]
+    },
+    {
+      "name": "Config",
+      "discriminator": [
+        155,
+        12,
+        170,
+        224,
+        30,
+        250,
+        204,
+        130
+      ]
+    },
+    {
+      "name": "Movement",
+      "discriminator": [
+        137,
+        179,
+        90,
+        160,
+        172,
+        21,
+        188,
+        45
+      ]
+    },
+    {
+      "name": "RoleAssignment",
+      "discriminator": [
+        205,
+        130,
+        191,
+        231,
+        211,
+        225,
+        155,
+        246
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "Signer is not authorized to perform this action"
+    },
+    {
+      "code": 6001,
+      "name": "StringTooLong",
+      "msg": "Provided string exceeds maximum allowed length"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidStatusTransition",
+      "msg": "Batch has already been delivered"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidMovementInput",
+      "msg": "courier_id and vehicle_id must both be set or both be empty"
+    }
+  ],
+  "types": [
+    {
+      "name": "Batch",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "batch_id",
+            "type": {
+              "array": [
+                "u8",
+                16
+              ]
+            }
+          },
+          {
+            "name": "ingredient_name",
+            "type": "string"
+          },
+          {
+            "name": "quantity",
+            "type": "u64"
+          },
+          {
+            "name": "source_type",
+            "type": {
+              "defined": {
+                "name": "SourceType"
+              }
+            }
+          },
+          {
+            "name": "source",
+            "type": "pubkey"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "BatchStatus"
+              }
+            }
+          },
+          {
+            "name": "movement_count",
+            "type": "u32"
+          },
+          {
+            "name": "received_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "delivered_at",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BatchStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Registered"
+          },
+          {
+            "name": "InTransit"
+          },
+          {
+            "name": "Delivered"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Config",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Movement",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "batch",
+            "type": "pubkey"
+          },
+          {
+            "name": "carrier",
+            "type": "pubkey"
+          },
+          {
+            "name": "courier_id",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "vehicle_id",
+            "type": {
+              "option": "string"
+            }
+          },
+          {
+            "name": "from_location",
+            "type": "string"
+          },
+          {
+            "name": "to_location",
+            "type": "string"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Role",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Source"
+          },
+          {
+            "name": "Carrier"
+          },
+          {
+            "name": "Restaurant"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RoleAssignment",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "role",
+            "type": {
+              "defined": {
+                "name": "Role"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "SourceType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Farmer"
+          },
+          {
+            "name": "Factory"
+          },
+          {
+            "name": "TraditionalMarket"
+          },
+          {
+            "name": "Supermarket"
+          }
+        ]
+      }
+    }
+  ],
+  "constants": [
+    {
+      "name": "BATCH_SEED",
+      "type": "bytes",
+      "value": "[98, 97, 116, 99, 104]"
+    },
+    {
+      "name": "CONFIG_SEED",
+      "type": "bytes",
+      "value": "[99, 111, 110, 102, 105, 103]"
+    },
+    {
+      "name": "MOVEMENT_SEED",
+      "type": "bytes",
+      "value": "[109, 111, 118, 101, 109, 101, 110, 116]"
+    },
+    {
+      "name": "ROLE_SEED",
+      "type": "bytes",
+      "value": "[114, 111, 108, 101]"
+    }
+  ]
+}
