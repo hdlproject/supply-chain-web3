@@ -1,4 +1,4 @@
-.PHONY: help build test validator deploy airdrop fmt lint clean
+ .PHONY: help build test validator deploy airdrop fmt lint clean
 
 PROGRAM_DIR := programs/supply-chain-web3
 PROGRAM_SO := target/deploy/supply_chain_web3.so

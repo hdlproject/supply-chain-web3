@@ -173,3 +173,4 @@ The existing `Counter` account, `initialize`/`increment` instructions,
 `COUNTER_SEED`/`HELLO_WORLD_LAMPORTS`/`MAX_COUNT` constants, and
 `test_initialize.rs` are deleted as part of this work — they are template
 scaffolding, not domain code.
+ 

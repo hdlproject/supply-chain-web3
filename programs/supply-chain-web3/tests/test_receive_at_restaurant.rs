@@ -139,7 +139,13 @@ fn test_receive_at_restaurant_happy_path() {
 
     let restaurant = Keypair::new();
     svm.airdrop(&restaurant.pubkey(), 1_000_000_000).unwrap();
-    assign_role(&mut svm, &admin, config, restaurant.pubkey(), Role::Restaurant);
+    assign_role(
+        &mut svm,
+        &admin,
+        config,
+        restaurant.pubkey(),
+        Role::Restaurant,
+    );
     let program_id = supply_chain_web3::id();
     let restaurant_role = Pubkey::find_program_address(
         &[
@@ -205,7 +211,13 @@ fn test_receive_at_restaurant_rejects_double_receive() {
 
     let restaurant = Keypair::new();
     svm.airdrop(&restaurant.pubkey(), 1_000_000_000).unwrap();
-    assign_role(&mut svm, &admin, config, restaurant.pubkey(), Role::Restaurant);
+    assign_role(
+        &mut svm,
+        &admin,
+        config,
+        restaurant.pubkey(),
+        Role::Restaurant,
+    );
     let program_id = supply_chain_web3::id();
     let restaurant_role = Pubkey::find_program_address(
         &[
@@ -252,7 +264,13 @@ fn test_log_movement_rejects_after_delivered() {
 
     let restaurant = Keypair::new();
     svm.airdrop(&restaurant.pubkey(), 1_000_000_000).unwrap();
-    assign_role(&mut svm, &admin, config, restaurant.pubkey(), Role::Restaurant);
+    assign_role(
+        &mut svm,
+        &admin,
+        config,
+        restaurant.pubkey(),
+        Role::Restaurant,
+    );
     let program_id = supply_chain_web3::id();
     let restaurant_role = Pubkey::find_program_address(
         &[
@@ -338,7 +356,13 @@ fn test_full_lifecycle_register_move_receive() {
 
     let restaurant = Keypair::new();
     svm.airdrop(&restaurant.pubkey(), 1_000_000_000).unwrap();
-    assign_role(&mut svm, &admin, config, restaurant.pubkey(), Role::Restaurant);
+    assign_role(
+        &mut svm,
+        &admin,
+        config,
+        restaurant.pubkey(),
+        Role::Restaurant,
+    );
     let restaurant_role = Pubkey::find_program_address(
         &[
             supply_chain_web3::constants::ROLE_SEED,
