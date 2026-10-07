@@ -4,8 +4,7 @@ import path from "node:path";
 import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 import { DEMO_ACCOUNTS, demoKeysDir, type DemoRole } from "../src/lib/demo-accounts";
-import { roleFormArg, roleLabel } from "../src/lib/format";
-import { configPda, getConnection, getProgramForKeypair, roleAssignmentPda } from "../src/lib/program";
+import { configPda, getConnection, getProgramForKeypair } from "../src/lib/program";
 
 const MIN_BALANCE_LAMPORTS = 1 * LAMPORTS_PER_SOL;
 const AIRDROP_LAMPORTS = 2 * LAMPORTS_PER_SOL;
@@ -71,32 +70,11 @@ async function main() {
     console.log("config already initialized, admin matches");
   }
 
+  console.log("\nDemo keypairs ready. Admin is on-chain; Source/Carrier/Restaurant still need");
+  console.log("role assignments — log in as Admin and use the /admin page to assign each one:");
   for (const [role, keypair] of keypairs) {
     if (role === "Admin") continue;
-    const [roleAddress] = roleAssignmentPda(keypair.publicKey);
-    const existing = await adminProgram.account.roleAssignment.fetchNullable(roleAddress);
-    if (existing && roleLabel(existing.role) === role) {
-      console.log(`${role} already assigned to ${keypair.publicKey.toBase58()}`);
-      continue;
-    }
-    // The enum arg's generated type (`DecodeEnum<...>`) is a deep
-    // conditional type that isn't practically nameable from a plain runtime
-    // string — `as never` is the pragmatic Anchor-client escape hatch here.
-    // `config`, `roleAssignment` (seeds = a const + the `wallet` arg above)
-    // and `systemProgram` are all auto-resolved by the generated client.
-    await adminProgram.methods
-      .assignRole(
-        keypair.publicKey,
-        roleFormArg(role as "Source" | "Carrier" | "Restaurant") as never,
-      )
-      .accounts({ admin: admin.publicKey })
-      .rpc();
-    console.log(`assigned ${role} to ${keypair.publicKey.toBase58()}`);
-  }
-
-  console.log("\nDemo accounts ready. Log in with (see src/lib/demo-accounts.ts for passwords):");
-  for (const account of DEMO_ACCOUNTS) {
-    console.log(`  ${account.username} (${account.role})`);
+    console.log(`  ${role.padEnd(10)} ${keypair.publicKey.toBase58()}`);
   }
 }
 
