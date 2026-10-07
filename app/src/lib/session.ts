@@ -2,11 +2,13 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 import { cookies } from "next/headers";
 
+import type { DemoRole } from "./demo-accounts";
+
 export const SESSION_COOKIE = "scw_session";
 
 export type SessionPayload = {
-  username: string;
   wallet: string;
+  role: DemoRole;
   iat: number;
 };
 
@@ -42,8 +44,8 @@ export function verifySession(token: string): SessionPayload | null {
   try {
     const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));
     if (
-      typeof payload.username === "string" &&
       typeof payload.wallet === "string" &&
+      typeof payload.role === "string" &&
       typeof payload.iat === "number"
     ) {
       return payload as SessionPayload;

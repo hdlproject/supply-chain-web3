@@ -1,28 +1,26 @@
 "use client";
 
-import { useActionState } from "react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 
-import { initialActionState } from "@/lib/action-state";
-
-import { loginWithPassword } from "./actions";
+import { useWalletSignIn } from "@/lib/use-wallet-sign-in";
 
 export function LoginForm() {
-  const [state, formAction, pending] = useActionState(loginWithPassword, initialActionState);
+  const { connected } = useWallet();
+  const { signIn, error, pending } = useWalletSignIn();
 
   return (
-    <form action={formAction}>
-      <div className="field">
-        <label htmlFor="username">Username</label>
-        <input id="username" name="username" type="text" placeholder="e.g. source" required />
-      </div>
-      <div className="field">
-        <label htmlFor="password">Password</label>
-        <input id="password" name="password" type="password" placeholder="••••••••" required />
-      </div>
-      {state.error ? <div className="field-error">{state.error}</div> : null}
-      <button type="submit" className="btn btn-primary btn-block" disabled={pending}>
-        {pending ? "Signing in…" : "Sign in"}
+    <div className="field" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <WalletMultiButton />
+      {error ? <div className="field-error">{error}</div> : null}
+      <button
+        type="button"
+        className="btn btn-primary btn-block"
+        disabled={!connected || pending}
+        onClick={signIn}
+      >
+        {pending ? "Signing in…" : "Sign in with wallet"}
       </button>
-    </form>
+    </div>
   );
 }

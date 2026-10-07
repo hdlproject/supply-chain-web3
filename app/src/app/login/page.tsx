@@ -5,7 +5,7 @@ import { resolveHomePath } from "@/lib/guard";
 import { getSession } from "@/lib/session";
 import type { DemoRole } from "@/lib/demo-accounts";
 
-import { demoLoginAction } from "./actions";
+import { DemoLoginButton } from "./DemoLoginButton";
 import { LoginForm } from "./LoginForm";
 
 const DEMO_ROLES: { role: DemoRole; description: string }[] = [
@@ -30,42 +30,26 @@ export default async function LoginPage() {
         ChainTrace
       </div>
       <div className="login-sub">
-        Restaurant Ingredient Supply Chain — demo login (custodial keypair per account)
+        Restaurant Ingredient Supply Chain — sign in with a wallet
       </div>
       <div className="login-columns">
         <div className="card">
           <div className="section-title">Sign in</div>
-          <div className="section-sub">Username + password. No wallet extension required.</div>
+          <div className="section-sub">
+            Connect a wallet and sign a login message. Your on-chain role is looked up
+            automatically — no password.
+          </div>
           <LoginForm />
         </div>
         <div className="card">
           <div className="section-title">Demo login</div>
           <div className="section-sub">
-            One click — instantly authenticated as that role&apos;s pre-provisioned account.
+            One click — connects a demo wallet for that role and signs you in. Only available
+            against localnet.
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {DEMO_ROLES.map(({ role, description }) => (
-              <form action={demoLoginAction.bind(null, role)} key={role}>
-                <button type="submit" className="btn btn-outline btn-block">
-                  <span>
-                    <span style={{ display: "block", fontWeight: 600 }}>
-                      Demo login as {role}
-                    </span>
-                    <span
-                      style={{
-                        display: "block",
-                        fontSize: 12,
-                        color: "var(--muted)",
-                        fontWeight: 400,
-                        marginTop: 2,
-                      }}
-                    >
-                      {description}
-                    </span>
-                  </span>
-                  <span style={{ color: "var(--muted)" }}>→</span>
-                </button>
-              </form>
+              <DemoLoginButton role={role} description={description} key={role} />
             ))}
           </div>
         </div>

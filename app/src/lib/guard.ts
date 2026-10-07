@@ -8,8 +8,8 @@ import { configPda, getReadProgram, roleAssignmentPda } from "./program";
 import { getSession } from "./session";
 
 export type AuthedSession = {
-  username: string;
   wallet: PublicKey;
+  role: DemoRole;
 };
 
 export async function requireSession(): Promise<AuthedSession> {
@@ -17,46 +17,43 @@ export async function requireSession(): Promise<AuthedSession> {
   if (!session) {
     redirect("/login");
   }
-  return { username: session.username, wallet: new PublicKey(session.wallet) };
+  return { wallet: new PublicKey(session.wallet), role: session.role };
 }
 
 export async function requireAdmin(): Promise<AuthedSession> {
   const session = await requireSession();
-  const program = getReadProgram();
-  const [pda] = configPda();
-  const config = await program.account.config.fetchNullable(pda);
-  if (!config || !config.admin.equals(session.wallet)) {
+  if (session.role !== "Admin") {
     redirect("/login?error=unauthorized");
   }
   return session;
 }
 
-export async function requireRole(
-  role: Exclude<DemoRole, "Admin">,
-): Promise<AuthedSession> {
+export async function requireRole(role: Exclude<DemoRole, "Admin">): Promise<AuthedSession> {
   const session = await requireSession();
-  const program = getReadProgram();
-  const [pda] = roleAssignmentPda(session.wallet);
-  const assignment = await program.account.roleAssignment.fetchNullable(pda);
-  if (!assignment || roleLabel(assignment.role) !== role) {
+  if (session.role !== role) {
     redirect("/login?error=unauthorized");
   }
   return session;
 }
 
-export async function resolveHomePath(wallet: PublicKey): Promise<string> {
+export async function resolveRole(wallet: PublicKey): Promise<DemoRole | null> {
   const program = getReadProgram();
 
   const [cfgPda] = configPda();
   const config = await program.account.config.fetchNullable(cfgPda);
   if (config && config.admin.equals(wallet)) {
-    return roleHomePath("Admin");
+    return "Admin";
   }
 
   const [rolePda] = roleAssignmentPda(wallet);
   const assignment = await program.account.roleAssignment.fetchNullable(rolePda);
   if (!assignment) {
-    return "/login";
+    return null;
   }
-  return roleHomePath(roleLabel(assignment.role) as DemoRole);
+  return roleLabel(assignment.role) as DemoRole;
+}
+
+export async function resolveHomePath(wallet: PublicKey): Promise<string> {
+  const role = await resolveRole(wallet);
+  return role ? roleHomePath(role) : "/login";
 }
