@@ -1,16 +1,42 @@
 "use client";
 
-import { useActionState } from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useAnchorWallet } from "@solana/wallet-adapter-react";
 
-import { initialActionState } from "@/lib/action-state";
-
-import { registerBatchAction } from "./actions";
+import { registerBatch } from "./actions";
 
 export function RegisterBatchForm() {
-  const [state, formAction, pending] = useActionState(registerBatchAction, initialActionState);
+  const wallet = useAnchorWallet();
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  const handleSubmit = async (formData: FormData) => {
+    if (!wallet) {
+      setError("Connect your wallet first.");
+      return;
+    }
+    setPending(true);
+    setError(null);
+    const ingredientName = String(formData.get("ingredientName") ?? "").trim();
+    const quantity = String(formData.get("quantity") ?? "").trim();
+    const sourceType = String(formData.get("sourceType") ?? "") as
+      | "Farmer"
+      | "Factory"
+      | "TraditionalMarket"
+      | "Supermarket";
+    const result = await registerBatch(wallet, ingredientName, quantity, sourceType);
+    setPending(false);
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+    router.refresh();
+  };
 
   return (
-    <form action={formAction}>
+    <form action={handleSubmit}>
       <div className="field">
         <label htmlFor="ingredientName">Ingredient name</label>
         <input
@@ -35,7 +61,7 @@ export function RegisterBatchForm() {
           <option value="Supermarket">Supermarket</option>
         </select>
       </div>
-      {state.error ? <div className="field-error">{state.error}</div> : null}
+      {error ? <div className="field-error">{error}</div> : null}
       <button type="submit" className="btn btn-primary btn-block" disabled={pending}>
         {pending ? "Registering…" : "Register batch"}
       </button>

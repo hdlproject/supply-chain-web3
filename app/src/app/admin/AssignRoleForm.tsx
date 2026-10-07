@@ -1,16 +1,37 @@
 "use client";
 
-import { useActionState } from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useAnchorWallet } from "@solana/wallet-adapter-react";
 
-import { initialActionState } from "@/lib/action-state";
-
-import { assignRoleAction } from "./actions";
+import { assignRole } from "./actions";
 
 export function AssignRoleForm() {
-  const [state, formAction, pending] = useActionState(assignRoleAction, initialActionState);
+  const wallet = useAnchorWallet();
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  const handleSubmit = async (formData: FormData) => {
+    if (!wallet) {
+      setError("Connect your wallet first.");
+      return;
+    }
+    setPending(true);
+    setError(null);
+    const walletInput = String(formData.get("wallet") ?? "");
+    const role = String(formData.get("role") ?? "") as "Source" | "Carrier" | "Restaurant";
+    const result = await assignRole(wallet, walletInput, role);
+    setPending(false);
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
+    router.refresh();
+  };
 
   return (
-    <form action={formAction}>
+    <form action={handleSubmit}>
       <div className="field">
         <label htmlFor="wallet">Wallet address</label>
         <input
@@ -30,7 +51,7 @@ export function AssignRoleForm() {
           <option value="Restaurant">Restaurant</option>
         </select>
       </div>
-      {state.error ? <div className="field-error">{state.error}</div> : null}
+      {error ? <div className="field-error">{error}</div> : null}
       <button type="submit" className="btn btn-primary btn-block" disabled={pending}>
         {pending ? "Assigning…" : "Assign role"}
       </button>

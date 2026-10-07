@@ -1,27 +1,20 @@
-"use server";
+"use client";
 
-import { revalidatePath } from "next/cache";
 import BN from "bn.js";
 
-import type { ActionState } from "@/lib/action-state";
 import { newBatchId } from "@/lib/batch-id";
-import { loadKeypairForWallet } from "@/lib/demo-accounts";
 import { sourceTypeFormArg } from "@/lib/format";
-import { requireRole } from "@/lib/guard";
-import { getProgramForKeypair } from "@/lib/program";
+import type { Wallet } from "@coral-xyz/anchor";
+import { getProgramForWallet } from "@/lib/program";
 
 const SOURCE_TYPES = ["Farmer", "Factory", "TraditionalMarket", "Supermarket"] as const;
 
-export async function registerBatchAction(
-  _prev: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
-  const session = await requireRole("Source");
-
-  const ingredientName = String(formData.get("ingredientName") ?? "").trim();
-  const quantityInput = String(formData.get("quantity") ?? "").trim();
-  const sourceType = String(formData.get("sourceType") ?? "") as (typeof SOURCE_TYPES)[number];
-
+export async function registerBatch(
+  wallet: Wallet,
+  ingredientName: string,
+  quantityInput: string,
+  sourceType: (typeof SOURCE_TYPES)[number],
+): Promise<{ error: string | null }> {
   if (!ingredientName || ingredientName.length > 64) {
     return { error: "Ingredient name is required and must be 64 characters or fewer." };
   }
@@ -32,8 +25,7 @@ export async function registerBatchAction(
     return { error: "Choose a source type." };
   }
 
-  const source = loadKeypairForWallet(session.wallet.toBase58());
-  const program = getProgramForKeypair(source);
+  const program = getProgramForWallet(wallet);
   const batchIdBytes = newBatchId();
 
   try {
@@ -47,12 +39,10 @@ export async function registerBatchAction(
         new BN(quantityInput),
         sourceTypeFormArg(sourceType) as never,
       )
-      .accounts({ source: source.publicKey })
+      .accounts({ source: wallet.publicKey })
       .rpc();
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Failed to register batch." };
   }
-
-  revalidatePath("/source");
   return { error: null };
 }

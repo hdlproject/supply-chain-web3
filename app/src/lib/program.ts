@@ -94,11 +94,16 @@ export function getReadProgram(): Program<SupplyChainWeb3> {
   return new Program(typedIdl(), provider);
 }
 
-export function getProgramForKeypair(keypair: Keypair): Program<SupplyChainWeb3> {
-  const provider = new AnchorProvider(getConnection(), new KeypairWallet(keypair), {
-    commitment: "confirmed",
-  });
+export function getProgramForWallet(
+  wallet: Wallet,
+  connection: Connection = getConnection(),
+): Program<SupplyChainWeb3> {
+  const provider = new AnchorProvider(connection, wallet, { commitment: "confirmed" });
   return new Program(typedIdl(), provider);
+}
+
+export function getProgramForKeypair(keypair: Keypair): Program<SupplyChainWeb3> {
+  return getProgramForWallet(new KeypairWallet(keypair));
 }
 
 export function configPda(programId: PublicKey = getProgramId()): [PublicKey, number] {
