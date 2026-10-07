@@ -6,7 +6,7 @@ import nacl from "tweetnacl";
 
 import { resolveRole } from "@/lib/guard";
 import { roleHomePath } from "@/lib/demo-accounts";
-import { buildMessage, issueNonce, verifyNonceToken } from "@/lib/nonce";
+import { buildMessage, consumeNonce, issueNonce, verifyNonceToken } from "@/lib/nonce";
 import { createSession, destroySession } from "@/lib/session";
 
 export async function requestNonce(): Promise<{ token: string; message: string }> {
@@ -23,6 +23,10 @@ export async function verifyWalletLogin(
     return { error: "Login challenge expired — try again." };
   }
 
+  if (!consumeNonce(payload.nonce, payload.exp)) {
+    return { error: "Login challenge already used — try again." };
+  }
+
   let wallet: PublicKey;
   try {
     wallet = new PublicKey(pubkeyBase58);
@@ -31,11 +35,16 @@ export async function verifyWalletLogin(
   }
 
   const message = buildMessage(payload.nonce);
-  const verified = nacl.sign.detached.verify(
-    new TextEncoder().encode(message),
-    Buffer.from(signatureBase64, "base64"),
-    wallet.toBytes(),
-  );
+  let verified: boolean;
+  try {
+    verified = nacl.sign.detached.verify(
+      new TextEncoder().encode(message),
+      Buffer.from(signatureBase64, "base64"),
+      wallet.toBytes(),
+    );
+  } catch {
+    return { error: "Signature verification failed." };
+  }
   if (!verified) {
     return { error: "Signature verification failed." };
   }

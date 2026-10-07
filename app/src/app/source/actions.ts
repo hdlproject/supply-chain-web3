@@ -4,13 +4,12 @@ import BN from "bn.js";
 
 import { newBatchId } from "@/lib/batch-id";
 import { sourceTypeFormArg } from "@/lib/format";
-import type { Wallet } from "@coral-xyz/anchor";
-import { getProgramForWallet } from "@/lib/program";
+import { getProgramForWallet, type SigningWallet } from "@/lib/program";
 
 const SOURCE_TYPES = ["Farmer", "Factory", "TraditionalMarket", "Supermarket"] as const;
 
 export async function registerBatch(
-  wallet: Wallet,
+  wallet: SigningWallet,
   ingredientName: string,
   quantityInput: string,
   sourceType: (typeof SOURCE_TYPES)[number],

@@ -1,10 +1,17 @@
 import { AnchorProvider, Program } from "@coral-xyz/anchor";
-import type { Wallet } from "@coral-xyz/anchor";
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import type { Transaction, VersionedTransaction } from "@solana/web3.js";
 
 import idlJson from "../idl/supply_chain_web3.json";
 import type { SupplyChainWeb3 } from "../idl/supply_chain_web3";
+
+// `@coral-xyz/anchor`'s package root re-exports a `Wallet` *class* (requires
+// a concrete `payer: Keypair`), which is NOT the same type `AnchorProvider`'s
+// constructor actually accepts — that's a separate `Wallet` *interface* (with
+// an optional `payer`) defined in `dist/esm/provider.d.ts` and not reachable
+// via a root import. Deriving the type directly from the constructor's own
+// parameter list sidesteps the ambiguous export name entirely.
+export type SigningWallet = ConstructorParameters<typeof AnchorProvider>[1];
 
 const CONFIG_SEED = Buffer.from("config");
 const ROLE_SEED = Buffer.from("role");
@@ -40,7 +47,7 @@ function typedIdl(): SupplyChainWeb3 {
   return idlJson as unknown as SupplyChainWeb3;
 }
 
-class ReadonlyWallet implements Wallet {
+class ReadonlyWallet implements SigningWallet {
   publicKey = PublicKey.default;
   payer = Keypair.generate();
 
@@ -62,7 +69,7 @@ class ReadonlyWallet implements Wallet {
 // missing at build time even though it resolves fine under plain Node. A
 // small local equivalent (mirroring Anchor's own NodeWallet) sidesteps the
 // broken re-export entirely.
-class KeypairWallet implements Wallet {
+class KeypairWallet implements SigningWallet {
   publicKey: PublicKey;
   payer: Keypair;
 
@@ -95,7 +102,7 @@ export function getReadProgram(): Program<SupplyChainWeb3> {
 }
 
 export function getProgramForWallet(
-  wallet: Wallet,
+  wallet: SigningWallet,
   connection: Connection = getConnection(),
 ): Program<SupplyChainWeb3> {
   const provider = new AnchorProvider(connection, wallet, { commitment: "confirmed" });

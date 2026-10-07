@@ -32,7 +32,17 @@ export function DemoLoginButton({ role, description }: { role: DemoRole; descrip
   }, [connected, wallet, name, signIn]);
 
   const handleClick = () => {
+    if (connected && wallet?.adapter.name === name) {
+      void signIn();
+      return;
+    }
     requested.current = true;
+    if (wallet?.adapter.name === name) {
+      connect().catch(() => {
+        requested.current = false;
+      });
+      return;
+    }
     select(name);
   };
 

@@ -3,11 +3,10 @@
 import { PublicKey } from "@solana/web3.js";
 
 import { roleFormArg } from "@/lib/format";
-import type { Wallet } from "@coral-xyz/anchor";
-import { getProgramForWallet } from "@/lib/program";
+import { getProgramForWallet, type SigningWallet } from "@/lib/program";
 
 export async function assignRole(
-  wallet: Wallet,
+  wallet: SigningWallet,
   walletInput: string,
   role: "Source" | "Carrier" | "Restaurant",
 ): Promise<{ error: string | null }> {

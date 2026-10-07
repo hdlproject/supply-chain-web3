@@ -20,10 +20,20 @@ export async function requireSession(): Promise<AuthedSession> {
   return { wallet: new PublicKey(session.wallet), role: session.role };
 }
 
+// Next.js disallows mutating cookies during a Server Component render (the
+// `destroySession()` cookie delete would throw if called directly from
+// here) -- so a role mismatch redirects through the `/api/session-clear`
+// route handler, which destroys the stale session and then forwards to
+// `/login?error=unauthorized`. Without this, a session whose cached role
+// has gone stale (e.g. an admin reassigned this wallet to a different role)
+// would bounce forever between here and `/login`, which trusts the same
+// stale session to redirect back to this very page.
+const UNAUTHORIZED_REDIRECT = "/api/session-clear?to=" + encodeURIComponent("/login?error=unauthorized");
+
 export async function requireAdmin(): Promise<AuthedSession> {
   const session = await requireSession();
   if (session.role !== "Admin") {
-    redirect("/login?error=unauthorized");
+    redirect(UNAUTHORIZED_REDIRECT);
   }
   return session;
 }
@@ -31,7 +41,7 @@ export async function requireAdmin(): Promise<AuthedSession> {
 export async function requireRole(role: Exclude<DemoRole, "Admin">): Promise<AuthedSession> {
   const session = await requireSession();
   if (session.role !== role) {
-    redirect("/login?error=unauthorized");
+    redirect(UNAUTHORIZED_REDIRECT);
   }
   return session;
 }

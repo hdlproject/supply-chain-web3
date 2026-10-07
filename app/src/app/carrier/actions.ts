@@ -1,11 +1,10 @@
 "use client";
 
 import { hexToBatchId } from "@/lib/batch-id";
-import type { Wallet } from "@coral-xyz/anchor";
-import { batchPda, getProgramForWallet } from "@/lib/program";
+import { batchPda, getProgramForWallet, type SigningWallet } from "@/lib/program";
 
 export async function logMovement(
-  wallet: Wallet,
+  wallet: SigningWallet,
   batchHex: string,
   isTransit: boolean,
   courierId: string,
