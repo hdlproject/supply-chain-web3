@@ -1,7 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
 import { describe, expect, it } from "vitest";
 
-import { batchPda, configPda, movementPda, roleAssignmentPda } from "./program";
+import { batchPda, configPda, isLocalnetRpc, movementPda, roleAssignmentPda } from "./program";
 
 const PROGRAM_ID = new PublicKey("5k3AeBoUR2LsjXT8XtddP9VfcnztLQyiK5YgYscPtReX");
 
@@ -53,5 +53,20 @@ describe("PDA derivation", () => {
       PROGRAM_ID,
     );
     expect(first.equals(expected)).toBe(true);
+  });
+});
+
+describe("isLocalnetRpc", () => {
+  it("accepts 127.0.0.1 and localhost", () => {
+    expect(isLocalnetRpc("http://127.0.0.1:8899")).toBe(true);
+    expect(isLocalnetRpc("http://localhost:8899")).toBe(true);
+  });
+
+  it("rejects a public RPC url", () => {
+    expect(isLocalnetRpc("https://api.devnet.solana.com")).toBe(false);
+  });
+
+  it("rejects a malformed url", () => {
+    expect(isLocalnetRpc("not a url")).toBe(false);
   });
 });

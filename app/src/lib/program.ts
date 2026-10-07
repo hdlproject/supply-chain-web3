@@ -15,6 +15,15 @@ export function getRpcUrl(): string {
   return process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "http://127.0.0.1:8899";
 }
 
+export function isLocalnetRpc(url: string = getRpcUrl()): boolean {
+  try {
+    const hostname = new URL(url).hostname;
+    return hostname === "127.0.0.1" || hostname === "localhost";
+  } catch {
+    return false;
+  }
+}
+
 export function getProgramId(): PublicKey {
   return new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID ?? idlJson.address);
 }

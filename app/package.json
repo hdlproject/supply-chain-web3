@@ -12,11 +12,15 @@
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",
+    "@solana/wallet-adapter-base": "^0.9.28",
+    "@solana/wallet-adapter-react": "^0.15.39",
+    "@solana/wallet-adapter-react-ui": "^0.9.39",
     "@solana/web3.js": "^1.99.0",
     "bcryptjs": "^3.0.3",
     "next": "16.3.6",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
