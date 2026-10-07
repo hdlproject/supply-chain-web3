@@ -28,7 +28,7 @@ export async function requireSession(): Promise<AuthedSession> {
 // has gone stale (e.g. an admin reassigned this wallet to a different role)
 // would bounce forever between here and `/login`, which trusts the same
 // stale session to redirect back to this very page.
-const UNAUTHORIZED_REDIRECT = "/api/session-clear?to=" + encodeURIComponent("/login?error=unauthorized");
+const UNAUTHORIZED_REDIRECT = "/api/session-clear";
 
 export async function requireAdmin(): Promise<AuthedSession> {
   const session = await requireSession();
