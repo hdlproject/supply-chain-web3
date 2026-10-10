@@ -4,6 +4,7 @@ use crate::constants::*;
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, Debug, InitSpace)]
 pub enum Role {
+    Admin,
     Source,
     Carrier,
     Restaurant,
@@ -12,14 +13,17 @@ pub enum Role {
 #[account]
 #[derive(InitSpace)]
 pub struct Config {
-    pub admin: Pubkey,
+    pub bootstrap_authority: Pubkey,
 }
 
 #[account]
 #[derive(InitSpace)]
 pub struct RoleAssignment {
     pub wallet: Pubkey,
-    pub role: Role,
+    pub is_admin: bool,
+    pub is_source: bool,
+    pub is_carrier: bool,
+    pub is_restaurant: bool,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, Debug, InitSpace)]
