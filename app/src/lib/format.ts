@@ -22,6 +22,7 @@ function lowerFirst(value: string): string {
 }
 
 const ROLE_LABELS: Record<string, string> = {
+  admin: "Admin",
   source: "Source",
   carrier: "Carrier",
   restaurant: "Restaurant",
@@ -62,7 +63,7 @@ export function batchStatusSlug(status: object): "registered" | "transit" | "del
   return "registered";
 }
 
-export function roleFormArg(role: "Source" | "Carrier" | "Restaurant"): EnumVariant {
+export function roleFormArg(role: "Admin" | "Source" | "Carrier" | "Restaurant"): EnumVariant {
   return { [lowerFirst(role)]: {} };
 }
 

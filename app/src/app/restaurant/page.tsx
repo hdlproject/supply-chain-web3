@@ -12,7 +12,7 @@ export default async function RestaurantPage() {
 
   return (
     <div>
-      <NavBar role="Restaurant" wallet={session.wallet} />
+      <NavBar roles={session.roles} activeRole="Restaurant" wallet={session.wallet} />
       <div className="page">
         <div className="card">
           <div className="section-title">Awaiting receipt</div>

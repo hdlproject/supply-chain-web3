@@ -26,7 +26,7 @@ export default async function CarrierPage() {
 
   return (
     <div>
-      <NavBar role="Carrier" wallet={session.wallet} />
+      <NavBar roles={session.roles} activeRole="Carrier" wallet={session.wallet} />
       <div className="page layout-split">
         <div className="panel-narrow card">
           <div className="section-title">Log movement</div>

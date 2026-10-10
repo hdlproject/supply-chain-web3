@@ -11,7 +11,7 @@ export default async function SourcePage() {
 
   return (
     <div>
-      <NavBar role="Source" wallet={session.wallet} />
+      <NavBar roles={session.roles} activeRole="Source" wallet={session.wallet} />
       <div className="page layout-split">
         <div className="panel-narrow card">
           <div className="section-title">Register batch</div>

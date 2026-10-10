@@ -14,6 +14,7 @@ import {
 
 describe("enum label formatting", () => {
   it("labels roles", () => {
+    expect(roleLabel({ admin: {} })).toBe("Admin");
     expect(roleLabel({ source: {} })).toBe("Source");
     expect(roleLabel({ carrier: {} })).toBe("Carrier");
     expect(roleLabel({ restaurant: {} })).toBe("Restaurant");
@@ -32,6 +33,7 @@ describe("enum label formatting", () => {
   });
 
   it("builds the enum arg shape the program expects from a UI value", () => {
+    expect(roleFormArg("Admin")).toEqual({ admin: {} });
     expect(roleFormArg("Restaurant")).toEqual({ restaurant: {} });
     expect(sourceTypeFormArg("TraditionalMarket")).toEqual({ traditionalMarket: {} });
   });
