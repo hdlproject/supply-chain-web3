@@ -28,7 +28,7 @@ fn init_config(svm: &mut LiteSVM, admin: &Keypair) -> Pubkey {
     let program_id = supply_chain_web3::id();
     let config =
         Pubkey::find_program_address(&[supply_chain_web3::constants::CONFIG_SEED], &program_id).0;
-    let role_assignment = Pubkey::find_program_address(
+    let admin_role = Pubkey::find_program_address(
         &[
             supply_chain_web3::constants::ROLE_SEED,
             admin.pubkey().as_ref(),
@@ -42,7 +42,7 @@ fn init_config(svm: &mut LiteSVM, admin: &Keypair) -> Pubkey {
         supply_chain_web3::accounts::InitializeConfig {
             admin: admin.pubkey(),
             config,
-            role_assignment,
+            role_assignment: admin_role,
             system_program: system_program::ID,
         }
         .to_account_metas(None),
@@ -51,20 +51,12 @@ fn init_config(svm: &mut LiteSVM, admin: &Keypair) -> Pubkey {
     let msg = Message::new_with_blockhash(&[instruction], Some(&admin.pubkey()), &blockhash);
     let tx = VersionedTransaction::try_new(VersionedMessage::Legacy(msg), &[admin]).unwrap();
     assert!(svm.send_transaction(tx).is_ok());
-    config
+    admin_role
 }
 
-fn assign_role(svm: &mut LiteSVM, admin: &Keypair, _config: Pubkey, wallet: Pubkey, role: Role) {
+fn grant_role(svm: &mut LiteSVM, admin: &Keypair, admin_role: Pubkey, wallet: Pubkey, role: Role) {
     let program_id = supply_chain_web3::id();
-    let admin_role_assignment = Pubkey::find_program_address(
-        &[
-            supply_chain_web3::constants::ROLE_SEED,
-            admin.pubkey().as_ref(),
-        ],
-        &program_id,
-    )
-    .0;
-    let target_role_assignment = Pubkey::find_program_address(
+    let target_role = Pubkey::find_program_address(
         &[supply_chain_web3::constants::ROLE_SEED, wallet.as_ref()],
         &program_id,
     )
@@ -74,8 +66,8 @@ fn assign_role(svm: &mut LiteSVM, admin: &Keypair, _config: Pubkey, wallet: Pubk
         &supply_chain_web3::instruction::GrantRole { wallet, role }.data(),
         supply_chain_web3::accounts::GrantRole {
             admin: admin.pubkey(),
-            admin_role_assignment,
-            target_role_assignment,
+            admin_role_assignment: admin_role,
+            target_role_assignment: target_role,
             system_program: system_program::ID,
         }
         .to_account_metas(None),
@@ -142,16 +134,16 @@ fn movement_pda(batch: Pubkey, movement_count: u32) -> Pubkey {
 fn test_log_movement_transit_then_warehouse_stop() {
     let program_id = supply_chain_web3::id();
     let (mut svm, admin) = new_svm_with_admin();
-    let config = init_config(&mut svm, &admin);
+    let admin_role = init_config(&mut svm, &admin);
 
     let source = Keypair::new();
     svm.airdrop(&source.pubkey(), 1_000_000_000).unwrap();
-    assign_role(&mut svm, &admin, config, source.pubkey(), Role::Source);
+    grant_role(&mut svm, &admin, admin_role, source.pubkey(), Role::Source);
     let batch = register_batch(&mut svm, &source, [3u8; 16]);
 
     let carrier = Keypair::new();
     svm.airdrop(&carrier.pubkey(), 1_000_000_000).unwrap();
-    assign_role(&mut svm, &admin, config, carrier.pubkey(), Role::Carrier);
+    grant_role(&mut svm, &admin, admin_role, carrier.pubkey(), Role::Carrier);
     let carrier_role = Pubkey::find_program_address(
         &[
             supply_chain_web3::constants::ROLE_SEED,
@@ -233,11 +225,11 @@ fn test_log_movement_transit_then_warehouse_stop() {
 #[test]
 fn test_log_movement_rejects_wrong_role() {
     let (mut svm, admin) = new_svm_with_admin();
-    let config = init_config(&mut svm, &admin);
+    let admin_role = init_config(&mut svm, &admin);
 
     let source = Keypair::new();
     svm.airdrop(&source.pubkey(), 1_000_000_000).unwrap();
-    assign_role(&mut svm, &admin, config, source.pubkey(), Role::Source);
+    grant_role(&mut svm, &admin, admin_role, source.pubkey(), Role::Source);
     let batch = register_batch(&mut svm, &source, [4u8; 16]);
 
     // `source` was never assigned the Carrier role.
@@ -279,16 +271,16 @@ fn test_log_movement_rejects_wrong_role() {
 #[test]
 fn test_log_movement_rejects_mismatched_courier_vehicle() {
     let (mut svm, admin) = new_svm_with_admin();
-    let config = init_config(&mut svm, &admin);
+    let admin_role = init_config(&mut svm, &admin);
 
     let source = Keypair::new();
     svm.airdrop(&source.pubkey(), 1_000_000_000).unwrap();
-    assign_role(&mut svm, &admin, config, source.pubkey(), Role::Source);
+    grant_role(&mut svm, &admin, admin_role, source.pubkey(), Role::Source);
     let batch = register_batch(&mut svm, &source, [5u8; 16]);
 
     let carrier = Keypair::new();
     svm.airdrop(&carrier.pubkey(), 1_000_000_000).unwrap();
-    assign_role(&mut svm, &admin, config, carrier.pubkey(), Role::Carrier);
+    grant_role(&mut svm, &admin, admin_role, carrier.pubkey(), Role::Carrier);
 
     let program_id = supply_chain_web3::id();
     let carrier_role = Pubkey::find_program_address(

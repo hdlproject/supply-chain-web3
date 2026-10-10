@@ -28,7 +28,7 @@ fn init_config(svm: &mut LiteSVM, admin: &Keypair) -> Pubkey {
     let program_id = supply_chain_web3::id();
     let config =
         Pubkey::find_program_address(&[supply_chain_web3::constants::CONFIG_SEED], &program_id).0;
-    let role_assignment = Pubkey::find_program_address(
+    let admin_role = Pubkey::find_program_address(
         &[
             supply_chain_web3::constants::ROLE_SEED,
             admin.pubkey().as_ref(),
@@ -42,7 +42,7 @@ fn init_config(svm: &mut LiteSVM, admin: &Keypair) -> Pubkey {
         supply_chain_web3::accounts::InitializeConfig {
             admin: admin.pubkey(),
             config,
-            role_assignment,
+            role_assignment: admin_role,
             system_program: system_program::ID,
         }
         .to_account_metas(None),
@@ -51,20 +51,12 @@ fn init_config(svm: &mut LiteSVM, admin: &Keypair) -> Pubkey {
     let msg = Message::new_with_blockhash(&[instruction], Some(&admin.pubkey()), &blockhash);
     let tx = VersionedTransaction::try_new(VersionedMessage::Legacy(msg), &[admin]).unwrap();
     assert!(svm.send_transaction(tx).is_ok());
-    config
+    admin_role
 }
 
-fn assign_role(svm: &mut LiteSVM, admin: &Keypair, _config: Pubkey, wallet: Pubkey, role: Role) {
+fn grant_role(svm: &mut LiteSVM, admin: &Keypair, admin_role: Pubkey, wallet: Pubkey, role: Role) {
     let program_id = supply_chain_web3::id();
-    let admin_role_assignment = Pubkey::find_program_address(
-        &[
-            supply_chain_web3::constants::ROLE_SEED,
-            admin.pubkey().as_ref(),
-        ],
-        &program_id,
-    )
-    .0;
-    let target_role_assignment = Pubkey::find_program_address(
+    let target_role = Pubkey::find_program_address(
         &[supply_chain_web3::constants::ROLE_SEED, wallet.as_ref()],
         &program_id,
     )
@@ -74,8 +66,8 @@ fn assign_role(svm: &mut LiteSVM, admin: &Keypair, _config: Pubkey, wallet: Pubk
         &supply_chain_web3::instruction::GrantRole { wallet, role }.data(),
         supply_chain_web3::accounts::GrantRole {
             admin: admin.pubkey(),
-            admin_role_assignment,
-            target_role_assignment,
+            admin_role_assignment: admin_role,
+            target_role_assignment: target_role,
             system_program: system_program::ID,
         }
         .to_account_metas(None),
@@ -90,11 +82,11 @@ fn assign_role(svm: &mut LiteSVM, admin: &Keypair, _config: Pubkey, wallet: Pubk
 fn test_register_batch_happy_path() {
     let program_id = supply_chain_web3::id();
     let (mut svm, admin) = new_svm_with_admin();
-    let config = init_config(&mut svm, &admin);
+    let admin_role = init_config(&mut svm, &admin);
 
     let source = Keypair::new();
     svm.airdrop(&source.pubkey(), 1_000_000_000).unwrap();
-    assign_role(&mut svm, &admin, config, source.pubkey(), Role::Source);
+    grant_role(&mut svm, &admin, admin_role, source.pubkey(), Role::Source);
 
     let batch_id: [u8; 16] = [7u8; 16];
     let batch = Pubkey::find_program_address(
@@ -150,11 +142,11 @@ fn test_register_batch_happy_path() {
 fn test_register_batch_rejects_wrong_role() {
     let program_id = supply_chain_web3::id();
     let (mut svm, admin) = new_svm_with_admin();
-    let config = init_config(&mut svm, &admin);
+    let admin_role = init_config(&mut svm, &admin);
 
     let carrier = Keypair::new();
     svm.airdrop(&carrier.pubkey(), 1_000_000_000).unwrap();
-    assign_role(&mut svm, &admin, config, carrier.pubkey(), Role::Carrier);
+    grant_role(&mut svm, &admin, admin_role, carrier.pubkey(), Role::Carrier);
 
     let batch_id: [u8; 16] = [1u8; 16];
     let batch = Pubkey::find_program_address(
@@ -199,11 +191,11 @@ fn test_register_batch_rejects_wrong_role() {
 fn test_register_batch_rejects_name_too_long() {
     let program_id = supply_chain_web3::id();
     let (mut svm, admin) = new_svm_with_admin();
-    let config = init_config(&mut svm, &admin);
+    let admin_role = init_config(&mut svm, &admin);
 
     let source = Keypair::new();
     svm.airdrop(&source.pubkey(), 1_000_000_000).unwrap();
-    assign_role(&mut svm, &admin, config, source.pubkey(), Role::Source);
+    grant_role(&mut svm, &admin, admin_role, source.pubkey(), Role::Source);
 
     let batch_id: [u8; 16] = [2u8; 16];
     let batch = Pubkey::find_program_address(

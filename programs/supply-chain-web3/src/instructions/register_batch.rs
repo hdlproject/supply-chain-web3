@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 use crate::{
     constants::*,
     error::ErrorCode,
-    state::{Batch, BatchStatus, Role, RoleAssignment, SourceType},
+    state::{Batch, BatchStatus, RoleAssignment, SourceType},
 };
 
 #[derive(Accounts)]
