@@ -1,4 +1,4 @@
- .PHONY: help build test validator deploy airdrop fmt lint clean idl web stop-web phantom-key
+ .PHONY: help build test validator deploy deploy-as airdrop fmt lint clean idl web stop-web phantom-key
 
 PROGRAM_DIR := programs/supply-chain-web3
 PROGRAM_SO := target/deploy/supply_chain_web3.so
@@ -12,6 +12,8 @@ help:
 	@echo "  make test       - build, then run the full test suite"
 	@echo "  make validator  - start a local solana-test-validator in the background"
 	@echo "  make deploy     - build, then deploy to localnet (needs 'make validator' running)"
+	@echo "  make deploy-as WALLET=<path> - build, then deploy using the given keypair as"
+	@echo "                     --provider.wallet (e.g. WALLET=\$$(PHANTOM_KEY_PATH))"
 	@echo "  make airdrop    - airdrop 2 SOL to the configured wallet on localnet"
 	@echo "  make idl        - regenerate the Anchor IDL into app/src/idl/"
 	@echo "  make web        - stop any existing dev server on port $(WEB_PORT), then run the frontend dev server"
@@ -38,6 +40,16 @@ validator:
 
 deploy: build
 	anchor deploy
+
+# make deploy-as WALLET=/path/to/keypair.json -- e.g. WALLET=$(PHANTOM_KEY_PATH)
+# after `make phantom-key`. Errors out instead of silently falling back to
+# the Anchor.toml default if WALLET is missing or empty.
+deploy-as: build
+	@if [ -z "$(WALLET)" ]; then \
+		echo "Usage: make deploy-as WALLET=/path/to/keypair.json"; \
+		exit 1; \
+	fi
+	anchor deploy --provider.wallet $(WALLET)
 
 airdrop:
 	solana airdrop 2 --url localhost
