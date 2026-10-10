@@ -28,12 +28,21 @@ fn init_config(svm: &mut LiteSVM, admin: &Keypair) -> Pubkey {
     let program_id = supply_chain_web3::id();
     let config =
         Pubkey::find_program_address(&[supply_chain_web3::constants::CONFIG_SEED], &program_id).0;
+    let role_assignment = Pubkey::find_program_address(
+        &[
+            supply_chain_web3::constants::ROLE_SEED,
+            admin.pubkey().as_ref(),
+        ],
+        &program_id,
+    )
+    .0;
     let instruction = Instruction::new_with_bytes(
         program_id,
         &supply_chain_web3::instruction::InitializeConfig {}.data(),
         supply_chain_web3::accounts::InitializeConfig {
             admin: admin.pubkey(),
             config,
+            role_assignment,
             system_program: system_program::ID,
         }
         .to_account_metas(None),
