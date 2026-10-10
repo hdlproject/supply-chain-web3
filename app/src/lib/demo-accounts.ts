@@ -10,11 +10,12 @@ export type DemoAccount = {
   keyFile: string;
 };
 
-// Demo keypairs only — see prd/v3_wallet_auth.md "Demo wallets". These are
-// NOT credentials: there's no password anymore. A wallet's actual
-// authority comes from its on-chain RoleAssignment (or being Config.admin),
-// checked at login via resolveRole — this list only maps a role label to
-// which keypair file backs that role's demo button.
+// Demo keypairs only — see prd/v3_wallet_auth.md "Demo wallets" and
+// prd/v4_multi_role.md. These are NOT credentials: there's no password
+// anymore. A wallet's actual authority comes entirely from its on-chain
+// RoleAssignment (Admin is just one of its four flags now, not a separate
+// Config.admin check) — checked at login via resolveRoles. This list only
+// maps a role label to which keypair file backs that role's demo button.
 export const DEMO_ACCOUNTS: DemoAccount[] = [
   { role: "Admin", keyFile: "admin.json" },
   { role: "Source", keyFile: "source.json" },

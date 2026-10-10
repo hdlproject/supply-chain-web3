@@ -60,9 +60,9 @@ async function main() {
     // ResolvedAccounts<...>").
     await adminProgram.methods.initializeConfig().accounts({ admin: admin.publicKey }).rpc();
     console.log("initialized config with admin =", admin.publicKey.toBase58());
-  } else if (!existingConfig.admin.equals(admin.publicKey)) {
+  } else if (!existingConfig.bootstrapAuthority.equals(admin.publicKey)) {
     throw new Error(
-      `On-chain Config.admin (${existingConfig.admin.toBase58()}) does not match the local ` +
+      `On-chain Config.bootstrap_authority (${existingConfig.bootstrapAuthority.toBase58()}) does not match the local ` +
         `admin demo keypair (${admin.publicKey.toBase58()}). The PRD requires the Admin demo ` +
         "account to be the same keypair that ran initialize_config.",
     );
@@ -70,8 +70,10 @@ async function main() {
     console.log("config already initialized, admin matches");
   }
 
-  console.log("\nDemo keypairs ready. Admin is on-chain; Source/Carrier/Restaurant still need");
-  console.log("role assignments — log in as Admin and use the /admin page to assign each one:");
+  console.log("\nDemo keypairs ready. Admin is on-chain with ALL FOUR roles (bootstrap grants");
+  console.log("Admin+Source+Carrier+Restaurant to the caller automatically). The separate");
+  console.log("Source/Carrier/Restaurant demo wallets still need their roles granted");
+  console.log("individually — log in as Admin and use the /admin page's Grant-role form:");
   for (const [role, keypair] of keypairs) {
     if (role === "Admin") continue;
     console.log(`  ${role.padEnd(10)} ${keypair.publicKey.toBase58()}`);
