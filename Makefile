@@ -12,8 +12,8 @@ help:
 	@echo "  make test       - build, then run the full test suite"
 	@echo "  make validator  - start a local solana-test-validator in the background"
 	@echo "  make deploy     - build, then deploy to localnet (needs 'make validator' running)"
-	@echo "  make deploy-as WALLET=<path> - build, then deploy using the given keypair as"
-	@echo "                     --provider.wallet (e.g. WALLET=\$$(PHANTOM_KEY_PATH))"
+	@echo "  make deploy-as [WALLET=<path>] - build, then deploy using WALLET (defaults to"
+	@echo "                     $(PHANTOM_KEY_PATH)) as --provider.wallet"
 	@echo "  make airdrop    - airdrop 2 SOL to the configured wallet on localnet"
 	@echo "  make idl        - regenerate the Anchor IDL into app/src/idl/"
 	@echo "  make web        - stop any existing dev server on port $(WEB_PORT), then run the frontend dev server"
@@ -41,12 +41,16 @@ validator:
 deploy: build
 	anchor deploy
 
-# make deploy-as WALLET=/path/to/keypair.json -- e.g. WALLET=$(PHANTOM_KEY_PATH)
-# after `make phantom-key`. Errors out instead of silently falling back to
-# the Anchor.toml default if WALLET is missing or empty.
+# make deploy-as [WALLET=/path/to/keypair.json] -- defaults to
+# PHANTOM_KEY_PATH (where `make phantom-key` writes), override with
+# WALLET=... for any other keypair. Errors out if the resolved file
+# doesn't actually exist rather than letting anchor deploy fail less
+# clearly further in.
+WALLET ?= $(PHANTOM_KEY_PATH)
+
 deploy-as: build
-	@if [ -z "$(WALLET)" ]; then \
-		echo "Usage: make deploy-as WALLET=/path/to/keypair.json"; \
+	@if [ ! -f "$(WALLET)" ]; then \
+		echo "No keypair at $(WALLET) -- run 'make phantom-key' first, or pass WALLET=/path/to/keypair.json"; \
 		exit 1; \
 	fi
 	anchor deploy --provider.wallet $(WALLET)
