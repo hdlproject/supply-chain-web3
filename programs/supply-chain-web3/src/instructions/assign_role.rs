@@ -26,12 +26,17 @@ pub struct AssignRole<'info> {
 
 pub fn handle_assign_role(ctx: Context<AssignRole>, wallet: Pubkey, role: Role) -> Result<()> {
     require_keys_eq!(
-        ctx.accounts.config.admin,
+        ctx.accounts.config.bootstrap_authority,
         ctx.accounts.admin.key(),
         ErrorCode::Unauthorized,
     );
 
     ctx.accounts.role_assignment.wallet = wallet;
-    ctx.accounts.role_assignment.role = role;
+    match role {
+        Role::Admin => ctx.accounts.role_assignment.is_admin = true,
+        Role::Source => ctx.accounts.role_assignment.is_source = true,
+        Role::Carrier => ctx.accounts.role_assignment.is_carrier = true,
+        Role::Restaurant => ctx.accounts.role_assignment.is_restaurant = true,
+    }
     Ok(())
 }

@@ -33,7 +33,7 @@ pub fn handle_log_movement(
     to_location: String,
 ) -> Result<()> {
     require!(
-        ctx.accounts.role_assignment.role == Role::Carrier,
+        ctx.accounts.role_assignment.is_carrier,
         ErrorCode::Unauthorized,
     );
     require!(

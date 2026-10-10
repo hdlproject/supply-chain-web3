@@ -17,7 +17,7 @@ pub struct ReceiveAtRestaurant<'info> {
 
 pub fn handle_receive_at_restaurant(ctx: Context<ReceiveAtRestaurant>) -> Result<()> {
     require!(
-        ctx.accounts.role_assignment.role == Role::Restaurant,
+        ctx.accounts.role_assignment.is_restaurant,
         ErrorCode::Unauthorized,
     );
     require!(

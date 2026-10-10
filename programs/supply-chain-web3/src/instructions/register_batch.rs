@@ -32,7 +32,7 @@ pub fn handle_register_batch(
     source_type: SourceType,
 ) -> Result<()> {
     require!(
-        ctx.accounts.role_assignment.role == Role::Source,
+        ctx.accounts.role_assignment.is_source,
         ErrorCode::Unauthorized,
     );
     require!(
