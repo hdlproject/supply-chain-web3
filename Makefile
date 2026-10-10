@@ -1,9 +1,10 @@
- .PHONY: help build test validator deploy airdrop fmt lint clean idl web stop-web
+ .PHONY: help build test validator deploy airdrop fmt lint clean idl web stop-web phantom-key
 
 PROGRAM_DIR := programs/supply-chain-web3
 PROGRAM_SO := target/deploy/supply_chain_web3.so
 TOOLS_VERSION := v2.3.2
 WEB_PORT := 3000
+PHANTOM_KEY_PATH := $(HOME)/.config/solana/phantom-deploy.json
 
 help:
 	@echo "Targets:"
@@ -15,6 +16,8 @@ help:
 	@echo "  make idl        - regenerate the Anchor IDL into app/src/idl/"
 	@echo "  make web        - stop any existing dev server on port $(WEB_PORT), then run the frontend dev server"
 	@echo "  make stop-web   - kill whatever is listening on port $(WEB_PORT)"
+	@echo "  make phantom-key - recover a Solana CLI keypair file from a seed phrase"
+	@echo "                     (e.g. Phantom's) into $(PHANTOM_KEY_PATH)"
 	@echo "  make fmt        - cargo fmt"
 	@echo "  make lint       - cargo clippy"
 	@echo "  make clean      - cargo clean + remove test-ledger/"
@@ -31,7 +34,7 @@ test: build
 	cargo test
 
 validator:
-	solana-test-validator --reset &
+	solana-test-validator --reset
 
 deploy: build
 	anchor deploy
@@ -60,6 +63,24 @@ stop-web:
 
 web: stop-web
 	cd app && npm run dev
+
+# Uses solana-keygen's own `prompt://` recovery (never writes your phrase
+# anywhere, doesn't echo it) rather than any custom parsing -- this is the
+# official way to turn a BIP39 seed phrase into a CLI keypair file.
+# key=0'/0' matches Phantom's default first-account derivation path
+# (m/44'/501'/0'/0'); the printed pubkey at the end lets you confirm it
+# matches the address Phantom shows before you trust the file for
+# anything. Refuses to overwrite an existing file at PHANTOM_KEY_PATH --
+# remove it yourself first if you mean to regenerate it.
+phantom-key:
+	@echo "Paste your seed phrase when prompted -- input is hidden, nothing is echoed or logged."
+	@echo "If this account has a passphrase (BIP39 25th word) set, you'll be asked for that too."
+	@mkdir -p $(dir $(PHANTOM_KEY_PATH))
+	solana-keygen recover "prompt://?key=0'/0'" -o $(PHANTOM_KEY_PATH)
+	@chmod 600 $(PHANTOM_KEY_PATH)
+	@echo "Wrote $(PHANTOM_KEY_PATH) (mode 600)."
+	@echo "Derived pubkey -- CONFIRM this matches the address Phantom shows for this account:"
+	@solana-keygen pubkey $(PHANTOM_KEY_PATH)
 
 fmt:
 	cargo fmt
