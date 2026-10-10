@@ -60,20 +60,28 @@ fn init_config(svm: &mut LiteSVM, admin: &Keypair) -> Pubkey {
     config
 }
 
-fn assign_role(svm: &mut LiteSVM, admin: &Keypair, config: Pubkey, wallet: Pubkey, role: Role) {
+fn assign_role(svm: &mut LiteSVM, admin: &Keypair, _config: Pubkey, wallet: Pubkey, role: Role) {
     let program_id = supply_chain_web3::id();
-    let role_assignment = Pubkey::find_program_address(
+    let admin_role_assignment = Pubkey::find_program_address(
+        &[
+            supply_chain_web3::constants::ROLE_SEED,
+            admin.pubkey().as_ref(),
+        ],
+        &program_id,
+    )
+    .0;
+    let target_role_assignment = Pubkey::find_program_address(
         &[supply_chain_web3::constants::ROLE_SEED, wallet.as_ref()],
         &program_id,
     )
     .0;
     let instruction = Instruction::new_with_bytes(
         program_id,
-        &supply_chain_web3::instruction::AssignRole { wallet, role }.data(),
-        supply_chain_web3::accounts::AssignRole {
+        &supply_chain_web3::instruction::GrantRole { wallet, role }.data(),
+        supply_chain_web3::accounts::GrantRole {
             admin: admin.pubkey(),
-            config,
-            role_assignment,
+            admin_role_assignment,
+            target_role_assignment,
             system_program: system_program::ID,
         }
         .to_account_metas(None),

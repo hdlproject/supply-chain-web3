@@ -19,8 +19,12 @@ pub mod supply_chain_web3 {
         crate::instructions::initialize_config::handle_initialize_config(ctx)
     }
 
-    pub fn assign_role(ctx: Context<AssignRole>, wallet: Pubkey, role: Role) -> Result<()> {
-        crate::instructions::assign_role::handle_assign_role(ctx, wallet, role)
+    pub fn grant_role(ctx: Context<GrantRole>, wallet: Pubkey, role: Role) -> Result<()> {
+        crate::instructions::grant_role::handle_grant_role(ctx, wallet, role)
+    }
+
+    pub fn revoke_role(ctx: Context<RevokeRole>, wallet: Pubkey, role: Role) -> Result<()> {
+        crate::instructions::revoke_role::handle_revoke_role(ctx, wallet, role)
     }
 
     pub fn register_batch(
