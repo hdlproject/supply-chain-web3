@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAnchorWallet } from "@solana/wallet-adapter-react";
 
-import { assignRole } from "./actions";
+import { revokeRole } from "./actions";
 
-export function AssignRoleForm() {
+export function RevokeRoleForm() {
   const wallet = useAnchorWallet();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -20,8 +20,12 @@ export function AssignRoleForm() {
     setPending(true);
     setError(null);
     const walletInput = String(formData.get("wallet") ?? "");
-    const role = String(formData.get("role") ?? "") as "Source" | "Carrier" | "Restaurant";
-    const result = await assignRole(wallet, walletInput, role);
+    const role = String(formData.get("role") ?? "") as
+      | "Admin"
+      | "Source"
+      | "Carrier"
+      | "Restaurant";
+    const result = await revokeRole(wallet, walletInput, role);
     setPending(false);
     if (result.error) {
       setError(result.error);
@@ -33,9 +37,9 @@ export function AssignRoleForm() {
   return (
     <form action={handleSubmit}>
       <div className="field">
-        <label htmlFor="wallet">Wallet address</label>
+        <label htmlFor="revoke-wallet">Wallet address</label>
         <input
-          id="wallet"
+          id="revoke-wallet"
           name="wallet"
           className="mono"
           type="text"
@@ -44,8 +48,9 @@ export function AssignRoleForm() {
         />
       </div>
       <div className="field">
-        <label htmlFor="role">Role</label>
-        <select id="role" name="role" required defaultValue="Source">
+        <label htmlFor="revoke-role">Role</label>
+        <select id="revoke-role" name="role" required defaultValue="Source">
+          <option value="Admin">Admin</option>
           <option value="Source">Source</option>
           <option value="Carrier">Carrier</option>
           <option value="Restaurant">Restaurant</option>
@@ -53,7 +58,7 @@ export function AssignRoleForm() {
       </div>
       {error ? <div className="field-error">{error}</div> : null}
       <button type="submit" className="btn btn-primary btn-block" disabled={pending}>
-        {pending ? "Assigning…" : "Assign role"}
+        {pending ? "Revoking…" : "Revoke role"}
       </button>
     </form>
   );
