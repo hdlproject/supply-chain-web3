@@ -8,7 +8,7 @@ export const SESSION_COOKIE = "scw_session";
 
 export type SessionPayload = {
   wallet: string;
-  role: DemoRole;
+  roles: DemoRole[];
   iat: number;
 };
 
@@ -45,7 +45,8 @@ export function verifySession(token: string): SessionPayload | null {
     const payload = JSON.parse(Buffer.from(body, "base64url").toString("utf8"));
     if (
       typeof payload.wallet === "string" &&
-      typeof payload.role === "string" &&
+      Array.isArray(payload.roles) &&
+      payload.roles.every((role: unknown) => typeof role === "string") &&
       typeof payload.iat === "number"
     ) {
       return payload as SessionPayload;

@@ -14,16 +14,16 @@ export type SupplyChainWeb3 = {
   },
   "instructions": [
     {
-      "name": "assignRole",
+      "name": "grantRole",
       "discriminator": [
-        255,
-        174,
-        125,
-        180,
-        203,
-        155,
-        202,
-        131
+        218,
+        234,
+        128,
+        15,
+        82,
+        33,
+        236,
+        253
       ],
       "accounts": [
         {
@@ -32,25 +32,27 @@ export type SupplyChainWeb3 = {
           "signer": true
         },
         {
-          "name": "config",
+          "name": "adminRoleAssignment",
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  99,
+                  114,
                   111,
-                  110,
-                  102,
-                  105,
-                  103
+                  108,
+                  101
                 ]
+              },
+              {
+                "kind": "account",
+                "path": "admin"
               }
             ]
           }
         },
         {
-          "name": "roleAssignment",
+          "name": "targetRoleAssignment",
           "writable": true,
           "pda": {
             "seeds": [
@@ -123,6 +125,27 @@ export type SupplyChainWeb3 = {
                   105,
                   103
                 ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "roleAssignment",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "admin"
               }
             ]
           }
@@ -370,6 +393,80 @@ export type SupplyChainWeb3 = {
           }
         }
       ]
+    },
+    {
+      "name": "revokeRole",
+      "discriminator": [
+        179,
+        232,
+        2,
+        180,
+        48,
+        227,
+        82,
+        7
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "adminRoleAssignment",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "admin"
+              }
+            ]
+          }
+        },
+        {
+          "name": "targetRoleAssignment",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "wallet"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "wallet",
+          "type": "pubkey"
+        },
+        {
+          "name": "role",
+          "type": {
+            "defined": {
+              "name": "role"
+            }
+          }
+        }
+      ]
     }
   ],
   "accounts": [
@@ -533,7 +630,7 @@ export type SupplyChainWeb3 = {
         "kind": "struct",
         "fields": [
           {
-            "name": "admin",
+            "name": "bootstrapAuthority",
             "type": "pubkey"
           }
         ]
@@ -585,6 +682,9 @@ export type SupplyChainWeb3 = {
         "kind": "enum",
         "variants": [
           {
+            "name": "admin"
+          },
+          {
             "name": "source"
           },
           {
@@ -606,12 +706,20 @@ export type SupplyChainWeb3 = {
             "type": "pubkey"
           },
           {
-            "name": "role",
-            "type": {
-              "defined": {
-                "name": "role"
-              }
-            }
+            "name": "isAdmin",
+            "type": "bool"
+          },
+          {
+            "name": "isSource",
+            "type": "bool"
+          },
+          {
+            "name": "isCarrier",
+            "type": "bool"
+          },
+          {
+            "name": "isRestaurant",
+            "type": "bool"
           }
         ]
       }

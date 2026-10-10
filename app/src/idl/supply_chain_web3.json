@@ -8,16 +8,16 @@
   },
   "instructions": [
     {
-      "name": "assign_role",
+      "name": "grant_role",
       "discriminator": [
-        255,
-        174,
-        125,
-        180,
-        203,
-        155,
-        202,
-        131
+        218,
+        234,
+        128,
+        15,
+        82,
+        33,
+        236,
+        253
       ],
       "accounts": [
         {
@@ -26,25 +26,27 @@
           "signer": true
         },
         {
-          "name": "config",
+          "name": "admin_role_assignment",
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  99,
+                  114,
                   111,
-                  110,
-                  102,
-                  105,
-                  103
+                  108,
+                  101
                 ]
+              },
+              {
+                "kind": "account",
+                "path": "admin"
               }
             ]
           }
         },
         {
-          "name": "role_assignment",
+          "name": "target_role_assignment",
           "writable": true,
           "pda": {
             "seeds": [
@@ -117,6 +119,27 @@
                   105,
                   103
                 ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "role_assignment",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "admin"
               }
             ]
           }
@@ -364,6 +387,80 @@
           }
         }
       ]
+    },
+    {
+      "name": "revoke_role",
+      "discriminator": [
+        179,
+        232,
+        2,
+        180,
+        48,
+        227,
+        82,
+        7
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "admin_role_assignment",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "admin"
+              }
+            ]
+          }
+        },
+        {
+          "name": "target_role_assignment",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "wallet"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "wallet",
+          "type": "pubkey"
+        },
+        {
+          "name": "role",
+          "type": {
+            "defined": {
+              "name": "Role"
+            }
+          }
+        }
+      ]
     }
   ],
   "accounts": [
@@ -527,7 +624,7 @@
         "kind": "struct",
         "fields": [
           {
-            "name": "admin",
+            "name": "bootstrap_authority",
             "type": "pubkey"
           }
         ]
@@ -579,6 +676,9 @@
         "kind": "enum",
         "variants": [
           {
+            "name": "Admin"
+          },
+          {
             "name": "Source"
           },
           {
@@ -600,12 +700,20 @@
             "type": "pubkey"
           },
           {
-            "name": "role",
-            "type": {
-              "defined": {
-                "name": "Role"
-              }
-            }
+            "name": "is_admin",
+            "type": "bool"
+          },
+          {
+            "name": "is_source",
+            "type": "bool"
+          },
+          {
+            "name": "is_carrier",
+            "type": "bool"
+          },
+          {
+            "name": "is_restaurant",
+            "type": "bool"
           }
         ]
       }

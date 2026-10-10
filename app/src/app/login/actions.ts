@@ -4,14 +4,17 @@ import { redirect } from "next/navigation";
 import { PublicKey } from "@solana/web3.js";
 import nacl from "tweetnacl";
 
-import { resolveRole } from "@/lib/guard";
+import { resolveRoles } from "@/lib/guard";
 import { roleHomePath } from "@/lib/demo-accounts";
+import type { DemoRole } from "@/lib/demo-accounts";
 import { buildMessage, consumeNonce, issueNonce, verifyNonceToken } from "@/lib/nonce";
 import { createSession, destroySession } from "@/lib/session";
 
 export async function requestNonce(): Promise<{ token: string; message: string }> {
   return issueNonce();
 }
+
+const ROLE_ORDER: DemoRole[] = ["Admin", "Source", "Carrier", "Restaurant"];
 
 export async function verifyWalletLogin(
   token: string,
@@ -49,13 +52,14 @@ export async function verifyWalletLogin(
     return { error: "Signature verification failed." };
   }
 
-  const role = await resolveRole(wallet);
-  if (!role) {
+  const roles = await resolveRoles(wallet);
+  if (roles.length === 0) {
     return { error: "This wallet has no on-chain role. Ask an admin to register it." };
   }
 
-  await createSession({ wallet: wallet.toBase58(), role });
-  redirect(roleHomePath(role));
+  await createSession({ wallet: wallet.toBase58(), roles });
+  const preferred = ROLE_ORDER.find((role) => roles.includes(role))!;
+  redirect(roleHomePath(preferred));
 }
 
 export async function logoutAction() {
