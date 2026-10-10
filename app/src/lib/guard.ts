@@ -68,5 +68,10 @@ export async function resolveRoles(wallet: PublicKey): Promise<DemoRole[]> {
 export async function resolveHomePath(wallet: PublicKey): Promise<string> {
   const roles = await resolveRoles(wallet);
   const preferred = ROLE_ORDER.find((role) => roles.includes(role));
-  return preferred ? roleHomePath(preferred) : "/login";
+  // A wallet with zero on-chain roles here means the session cookie is
+  // stale (its roles were revoked after login) -- route it through the
+  // same stale-session cleanup path used by requireAdmin/requireRole
+  // rather than back to "/login", which would just redirect here again
+  // and loop forever since the cookie is still present.
+  return preferred ? roleHomePath(preferred) : UNAUTHORIZED_REDIRECT;
 }

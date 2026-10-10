@@ -97,6 +97,10 @@ a:hover {
   letter-spacing: 0.4px;
   text-transform: uppercase;
 }
+.role-badge-inactive {
+  background: var(--border);
+  color: var(--muted);
+}
 
 .wallet {
   font-family: var(--font-mono), monospace;

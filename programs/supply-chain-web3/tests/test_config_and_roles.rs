@@ -256,3 +256,73 @@ fn test_revoke_role_removes_a_role() {
     let role_state = RoleAssignment::try_deserialize(&mut data).unwrap();
     assert!(!role_state.is_source);
 }
+
+#[test]
+fn test_grant_and_revoke_admin_role_on_a_fresh_wallet() {
+    let program_id = supply_chain_web3::id();
+    let (mut svm, admin) = new_svm_with_payer();
+    let (_config, admin_role) = init_config(&mut svm, &admin);
+
+    let wallet = Keypair::new();
+    let target_role = Pubkey::find_program_address(
+        &[
+            supply_chain_web3::constants::ROLE_SEED,
+            wallet.pubkey().as_ref(),
+        ],
+        &program_id,
+    )
+    .0;
+
+    let grant_ix = Instruction::new_with_bytes(
+        program_id,
+        &supply_chain_web3::instruction::GrantRole {
+            wallet: wallet.pubkey(),
+            role: Role::Admin,
+        }
+        .data(),
+        supply_chain_web3::accounts::GrantRole {
+            admin: admin.pubkey(),
+            admin_role_assignment: admin_role,
+            target_role_assignment: target_role,
+            system_program: system_program::ID,
+        }
+        .to_account_metas(None),
+    );
+    let blockhash = svm.latest_blockhash();
+    let msg = Message::new_with_blockhash(&[grant_ix], Some(&admin.pubkey()), &blockhash);
+    let tx = VersionedTransaction::try_new(VersionedMessage::Legacy(msg), &[&admin]).unwrap();
+    assert!(svm.send_transaction(tx).is_ok());
+
+    let role_account = svm.get_account(&target_role).unwrap();
+    let mut data: &[u8] = &role_account.data;
+    let role_state = RoleAssignment::try_deserialize(&mut data).unwrap();
+    assert_eq!(role_state.wallet, wallet.pubkey());
+    assert!(role_state.is_admin);
+    assert!(!role_state.is_source);
+    assert!(!role_state.is_carrier);
+    assert!(!role_state.is_restaurant);
+
+    let revoke_ix = Instruction::new_with_bytes(
+        program_id,
+        &supply_chain_web3::instruction::RevokeRole {
+            wallet: wallet.pubkey(),
+            role: Role::Admin,
+        }
+        .data(),
+        supply_chain_web3::accounts::RevokeRole {
+            admin: admin.pubkey(),
+            admin_role_assignment: admin_role,
+            target_role_assignment: target_role,
+        }
+        .to_account_metas(None),
+    );
+    let blockhash = svm.latest_blockhash();
+    let msg = Message::new_with_blockhash(&[revoke_ix], Some(&admin.pubkey()), &blockhash);
+    let tx = VersionedTransaction::try_new(VersionedMessage::Legacy(msg), &[&admin]).unwrap();
+    assert!(svm.send_transaction(tx).is_ok());
+
+    let role_account = svm.get_account(&target_role).unwrap();
+    let mut data: &[u8] = &role_account.data;
+    let role_state = RoleAssignment::try_deserialize(&mut data).unwrap();
+    assert!(!role_state.is_admin);
+}

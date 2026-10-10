@@ -9,7 +9,7 @@ import { DemoLoginButton } from "./DemoLoginButton";
 import { LoginForm } from "./LoginForm";
 
 const DEMO_ROLES: { role: DemoRole; description: string }[] = [
-  { role: "Admin", description: "Assign roles · view every batch & movement" },
+  { role: "Admin", description: "Grant & revoke roles · view every batch & movement" },
   { role: "Source", description: "Register new batches" },
   { role: "Carrier", description: "Log movements in transit" },
   { role: "Restaurant", description: "Receive incoming batches" },
