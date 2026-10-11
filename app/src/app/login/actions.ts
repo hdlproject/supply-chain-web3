@@ -20,6 +20,7 @@ export async function verifyWalletLogin(
   token: string,
   pubkeyBase58: string,
   signatureBase64: string,
+  expectedRole?: DemoRole,
 ): Promise<{ error: string | null }> {
   const payload = verifyNonceToken(token);
   if (!payload) {
@@ -56,9 +57,12 @@ export async function verifyWalletLogin(
   if (roles.length === 0) {
     return { error: "This wallet has no on-chain role. Ask an admin to register it." };
   }
+  if (expectedRole && !roles.includes(expectedRole)) {
+    return { error: `This wallet does not have the ${expectedRole} role.` };
+  }
 
   await createSession({ wallet: wallet.toBase58(), roles });
-  const preferred = ROLE_ORDER.find((role) => roles.includes(role))!;
+  const preferred = expectedRole ?? ROLE_ORDER.find((role) => roles.includes(role))!;
   redirect(roleHomePath(preferred));
 }
 
