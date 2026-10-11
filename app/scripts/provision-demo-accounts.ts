@@ -1,27 +1,31 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
-import { DEMO_ACCOUNTS, demoKeysDir, type DemoRole } from "../src/lib/demo-accounts";
 import { configPda, getConnection, getProgramForKeypair } from "../src/lib/program";
 
 const MIN_BALANCE_LAMPORTS = 1 * LAMPORTS_PER_SOL;
 const AIRDROP_LAMPORTS = 2 * LAMPORTS_PER_SOL;
 
-function ensureKeypair(keyFile: string): Keypair {
-  const dir = demoKeysDir();
-  if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true });
+// The bootstrap wallet (becomes Admin+Source+Carrier+Restaurant atomically
+// via initialize_config) is a real wallet, not a disposable demo keypair —
+// read straight from the same keypair file `make phantom-key` writes. No
+// other role has a demo keypair to provision: every login (demo-labeled or
+// not) now signs in with whatever wallet is actually connected, and any
+// additional wallet gets its roles via the admin UI's Grant-role form.
+function loadBootstrapKeypair(): Keypair {
+  const keyPath =
+    process.env.PHANTOM_KEY_PATH ?? path.join(os.homedir(), ".config", "solana", "phantom-deploy.json");
+  if (!existsSync(keyPath)) {
+    throw new Error(
+      `No bootstrap keypair at ${keyPath}. Run "make phantom-key" first, or set PHANTOM_KEY_PATH ` +
+        "to an existing keypair file.",
+    );
   }
-  const filePath = path.join(dir, keyFile);
-  if (existsSync(filePath)) {
-    const secretKey = Uint8Array.from(JSON.parse(readFileSync(filePath, "utf8")));
-    return Keypair.fromSecretKey(secretKey);
-  }
-  const keypair = Keypair.generate();
-  writeFileSync(filePath, JSON.stringify(Array.from(keypair.secretKey)));
-  return keypair;
+  const secretKey = Uint8Array.from(JSON.parse(readFileSync(keyPath, "utf8")));
+  return Keypair.fromSecretKey(secretKey);
 }
 
 async function ensureFunded(
@@ -37,18 +41,11 @@ async function ensureFunded(
 async function main() {
   const connection = getConnection();
 
-  const keypairs = new Map<DemoRole, Keypair>();
-  for (const account of DEMO_ACCOUNTS) {
-    const keypair = ensureKeypair(account.keyFile);
-    keypairs.set(account.role, keypair);
-    console.log(`${account.role.padEnd(10)} ${keypair.publicKey.toBase58()}`);
-  }
+  const admin = loadBootstrapKeypair();
+  console.log(`${"Admin".padEnd(10)} ${admin.publicKey.toBase58()} (bootstrap wallet)`);
 
-  for (const keypair of keypairs.values()) {
-    await ensureFunded(connection, keypair);
-  }
+  await ensureFunded(connection, admin);
 
-  const admin = keypairs.get("Admin")!;
   const adminProgram = getProgramForKeypair(admin);
   const [configAddress] = configPda();
   const existingConfig = await adminProgram.account.config.fetchNullable(configAddress);
@@ -59,25 +56,25 @@ async function main() {
     // either explicitly is a type error ("does not exist in type
     // ResolvedAccounts<...>").
     await adminProgram.methods.initializeConfig().accounts({ admin: admin.publicKey }).rpc();
-    console.log("initialized config with admin =", admin.publicKey.toBase58());
+    console.log("initialized config with bootstrap wallet =", admin.publicKey.toBase58());
   } else if (!existingConfig.bootstrapAuthority.equals(admin.publicKey)) {
     throw new Error(
-      `On-chain Config.bootstrap_authority (${existingConfig.bootstrapAuthority.toBase58()}) does not match the local ` +
-        `admin demo keypair (${admin.publicKey.toBase58()}). The PRD requires the Admin demo ` +
-        "account to be the same keypair that ran initialize_config.",
+      `On-chain Config.bootstrap_authority (${existingConfig.bootstrapAuthority.toBase58()}) does not match the ` +
+        `configured bootstrap keypair (${admin.publicKey.toBase58()}). This program has already been bootstrapped ` +
+        "by a different wallet — there is no migration path for Config/RoleAssignment's layout " +
+        "(or for who holds bootstrap_authority); run a fresh --reset + redeploy + re-provision.",
     );
   } else {
-    console.log("config already initialized, admin matches");
+    console.log("config already initialized, bootstrap wallet matches");
   }
 
-  console.log("\nDemo keypairs ready. Admin is on-chain with ALL FOUR roles (bootstrap grants");
-  console.log("Admin+Source+Carrier+Restaurant to the caller automatically). The separate");
-  console.log("Source/Carrier/Restaurant demo wallets still need their roles granted");
-  console.log("individually — log in as Admin and use the /admin page's Grant-role form:");
-  for (const [role, keypair] of keypairs) {
-    if (role === "Admin") continue;
-    console.log(`  ${role.padEnd(10)} ${keypair.publicKey.toBase58()}`);
-  }
+  console.log("\nBootstrap wallet", admin.publicKey.toBase58(), "is on-chain with ALL FOUR roles");
+  console.log("(Admin+Source+Carrier+Restaurant, granted automatically at bootstrap). Connect that");
+  console.log("wallet for real (WalletMultiButton + \"Sign in with wallet\", or any of the login");
+  console.log("page's \"Demo login as ...\" shortcuts, which just sign in with whatever's");
+  console.log("connected) to act with any of its roles.");
+  console.log("\nAny other wallet needs its roles granted individually — log in as Admin and use");
+  console.log("the /admin page's Grant-role form.");
 }
 
 main().catch((error) => {

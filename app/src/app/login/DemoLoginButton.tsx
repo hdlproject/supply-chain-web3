@@ -2,48 +2,41 @@
 
 import { useEffect, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
 import type { DemoRole } from "@/lib/demo-accounts";
-import { demoWalletName } from "@/lib/demo-wallet-adapter";
 import { useWalletSignIn } from "@/lib/use-wallet-sign-in";
 
+/**
+ * No role has a disposable demo keypair — every role's actual authority is
+ * on-chain (see guard.ts's resolveRoles), so this is a one-click shortcut
+ * over the same real-wallet flow LoginForm uses: sign in with whatever
+ * wallet is already connected, or open the wallet picker first if nothing
+ * is connected yet, then sign in automatically once it connects. The
+ * labeled role is just a hint to the user about which wallet to connect —
+ * the backend determines the real role(s) from on-chain state regardless
+ * of which button was clicked.
+ */
 export function DemoLoginButton({ role, description }: { role: DemoRole; description: string }) {
-  const { select, connect, connected, wallet, connecting } = useWallet();
+  const { connected } = useWallet();
+  const { setVisible } = useWalletModal();
   const { signIn, error, pending } = useWalletSignIn();
-  const name = demoWalletName(role);
   const requested = useRef(false);
 
-  // select() just marks this adapter as "selected" in context; it doesn't
-  // connect on its own since Providers sets autoConnect={false}. Connect
-  // once the selection has taken effect, then sign in once connected.
   useEffect(() => {
-    if (requested.current && wallet?.adapter.name === name && !connected && !connecting) {
-      connect().catch(() => {
-        requested.current = false;
-      });
-    }
-  }, [wallet, name, connected, connecting, connect]);
-
-  useEffect(() => {
-    if (requested.current && connected && wallet?.adapter.name === name) {
+    if (requested.current && connected) {
       requested.current = false;
-      void signIn();
+      void signIn(role);
     }
-  }, [connected, wallet, name, signIn]);
+  }, [connected, signIn, role]);
 
   const handleClick = () => {
-    if (connected && wallet?.adapter.name === name) {
-      void signIn();
+    if (connected) {
+      void signIn(role);
       return;
     }
     requested.current = true;
-    if (wallet?.adapter.name === name) {
-      connect().catch(() => {
-        requested.current = false;
-      });
-      return;
-    }
-    select(name);
+    setVisible(true);
   };
 
   return (

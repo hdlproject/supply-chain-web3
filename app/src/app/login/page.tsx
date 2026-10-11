@@ -44,8 +44,8 @@ export default async function LoginPage() {
         <div className="card">
           <div className="section-title">Demo login</div>
           <div className="section-sub">
-            One click — connects a demo wallet for that role and signs you in. Only available
-            against localnet.
+            One click — connects your wallet (prompting if needed) and signs you in. The label is
+            just a hint; your on-chain roles decide where you land.
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {DEMO_ROLES.map(({ role, description }) => (
