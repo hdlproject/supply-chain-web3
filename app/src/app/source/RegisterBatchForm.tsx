@@ -2,21 +2,17 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useAnchorWallet } from "@solana/wallet-adapter-react";
+
+import { useWalletGatedAction } from "@/lib/use-wallet-gated-action";
 
 import { registerBatch } from "./actions";
 
 export function RegisterBatchForm() {
-  const wallet = useAnchorWallet();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  const handleSubmit = async (formData: FormData) => {
-    if (!wallet) {
-      setError("Connect your wallet first.");
-      return;
-    }
+  const handleSubmit = useWalletGatedAction<FormData>(async (wallet, formData) => {
     setPending(true);
     setError(null);
     const ingredientName = String(formData.get("ingredientName") ?? "").trim();
@@ -33,7 +29,7 @@ export function RegisterBatchForm() {
       return;
     }
     router.refresh();
-  };
+  });
 
   return (
     <form action={handleSubmit}>

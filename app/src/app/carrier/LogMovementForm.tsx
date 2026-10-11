@@ -2,22 +2,18 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useAnchorWallet } from "@solana/wallet-adapter-react";
+
+import { useWalletGatedAction } from "@/lib/use-wallet-gated-action";
 
 import { logMovement } from "./actions";
 
 export function LogMovementForm({ batches }: { batches: { value: string; label: string }[] }) {
-  const wallet = useAnchorWallet();
   const router = useRouter();
   const [stopType, setStopType] = useState<"transit" | "warehouse">("transit");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  const handleSubmit = async (formData: FormData) => {
-    if (!wallet) {
-      setError("Connect your wallet first.");
-      return;
-    }
+  const handleSubmit = useWalletGatedAction<FormData>(async (wallet, formData) => {
     setPending(true);
     setError(null);
     const batchId = String(formData.get("batchId") ?? "");
@@ -33,7 +29,7 @@ export function LogMovementForm({ batches }: { batches: { value: string; label: 
       return;
     }
     router.refresh();
-  };
+  });
 
   return (
     <form action={handleSubmit}>

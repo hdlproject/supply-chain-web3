@@ -2,21 +2,17 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useAnchorWallet } from "@solana/wallet-adapter-react";
+
+import { useWalletGatedAction } from "@/lib/use-wallet-gated-action";
 
 import { revokeRole } from "./actions";
 
 export function RevokeRoleForm() {
-  const wallet = useAnchorWallet();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  const handleSubmit = async (formData: FormData) => {
-    if (!wallet) {
-      setError("Connect your wallet first.");
-      return;
-    }
+  const handleSubmit = useWalletGatedAction<FormData>(async (wallet, formData) => {
     setPending(true);
     setError(null);
     const walletInput = String(formData.get("wallet") ?? "");
@@ -32,7 +28,7 @@ export function RevokeRoleForm() {
       return;
     }
     router.refresh();
-  };
+  });
 
   return (
     <form action={handleSubmit}>
