@@ -12,4 +12,6 @@ pub enum ErrorCode {
     InvalidStatusTransition,
     #[msg("courier_id and vehicle_id must both be set or both be empty")]
     InvalidMovementInput,
+    #[msg("Wallet does not hold the role being revoked")]
+    RoleNotHeld,
 }

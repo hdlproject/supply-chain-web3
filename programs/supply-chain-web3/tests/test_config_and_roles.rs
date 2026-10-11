@@ -5,10 +5,12 @@ use {
         AccountDeserialize, InstructionData, ToAccountMetas,
     },
     litesvm::LiteSVM,
+    solana_instruction::error::InstructionError,
     solana_keypair::Keypair,
     solana_message::{Message, VersionedMessage},
     solana_signer::Signer,
     solana_transaction::versioned::VersionedTransaction,
+    solana_transaction_error::TransactionError,
     supply_chain_web3::state::{Config, Role, RoleAssignment},
 };
 
@@ -255,6 +257,77 @@ fn test_revoke_role_removes_a_role() {
     let mut data: &[u8] = &role_account.data;
     let role_state = RoleAssignment::try_deserialize(&mut data).unwrap();
     assert!(!role_state.is_source);
+}
+
+#[test]
+fn test_revoke_role_rejects_a_role_the_wallet_does_not_hold() {
+    let program_id = supply_chain_web3::id();
+    let (mut svm, admin) = new_svm_with_payer();
+    let (_config, admin_role) = init_config(&mut svm, &admin);
+
+    let wallet = Keypair::new();
+    let target_role = Pubkey::find_program_address(
+        &[
+            supply_chain_web3::constants::ROLE_SEED,
+            wallet.pubkey().as_ref(),
+        ],
+        &program_id,
+    )
+    .0;
+
+    // Grant Source only — Carrier is never set true for this wallet.
+    let grant_ix = Instruction::new_with_bytes(
+        program_id,
+        &supply_chain_web3::instruction::GrantRole {
+            wallet: wallet.pubkey(),
+            role: Role::Source,
+        }
+        .data(),
+        supply_chain_web3::accounts::GrantRole {
+            admin: admin.pubkey(),
+            admin_role_assignment: admin_role,
+            target_role_assignment: target_role,
+            system_program: system_program::ID,
+        }
+        .to_account_metas(None),
+    );
+    let blockhash = svm.latest_blockhash();
+    let msg = Message::new_with_blockhash(&[grant_ix], Some(&admin.pubkey()), &blockhash);
+    let tx = VersionedTransaction::try_new(VersionedMessage::Legacy(msg), &[&admin]).unwrap();
+    assert!(svm.send_transaction(tx).is_ok());
+
+    // Revoking Carrier (never held) must fail, not silently no-op succeed.
+    let revoke_ix = Instruction::new_with_bytes(
+        program_id,
+        &supply_chain_web3::instruction::RevokeRole {
+            wallet: wallet.pubkey(),
+            role: Role::Carrier,
+        }
+        .data(),
+        supply_chain_web3::accounts::RevokeRole {
+            admin: admin.pubkey(),
+            admin_role_assignment: admin_role,
+            target_role_assignment: target_role,
+        }
+        .to_account_metas(None),
+    );
+    let blockhash = svm.latest_blockhash();
+    let msg = Message::new_with_blockhash(&[revoke_ix], Some(&admin.pubkey()), &blockhash);
+    let tx = VersionedTransaction::try_new(VersionedMessage::Legacy(msg), &[&admin]).unwrap();
+    let res = svm.send_transaction(tx);
+    let err = res.unwrap_err().err;
+    assert_eq!(
+        err,
+        TransactionError::InstructionError(0, InstructionError::Custom(6004)),
+        "expected RoleNotHeld (custom error 6004), got {err:?}"
+    );
+
+    // Source, which WAS granted, must be untouched by the rejected revoke.
+    let role_account = svm.get_account(&target_role).unwrap();
+    let mut data: &[u8] = &role_account.data;
+    let role_state = RoleAssignment::try_deserialize(&mut data).unwrap();
+    assert!(role_state.is_source);
+    assert!(!role_state.is_carrier);
 }
 
 #[test]

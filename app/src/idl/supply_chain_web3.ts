@@ -543,6 +543,11 @@ export type SupplyChainWeb3 = {
       "code": 6003,
       "name": "invalidMovementInput",
       "msg": "courier_id and vehicle_id must both be set or both be empty"
+    },
+    {
+      "code": 6004,
+      "name": "roleNotHeld",
+      "msg": "Wallet does not hold the role being revoked"
     }
   ],
   "types": [
