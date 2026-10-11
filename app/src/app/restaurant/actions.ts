@@ -2,6 +2,7 @@
 
 import { hexToBatchId } from "@/lib/batch-id";
 import { batchPda, getProgramForWallet, type SigningWallet } from "@/lib/program";
+import { describeTxError } from "@/lib/tx-error";
 
 export async function receiveBatch(wallet: SigningWallet, batchHex: string): Promise<{ error: string | null }> {
   let batchIdBytes: Uint8Array;
@@ -22,7 +23,7 @@ export async function receiveBatch(wallet: SigningWallet, batchHex: string): Pro
       .accounts({ restaurant: wallet.publicKey, batch })
       .rpc();
   } catch (error) {
-    return { error: error instanceof Error ? error.message : "Failed to receive batch." };
+    return { error: describeTxError(error, "Failed to receive batch.") };
   }
   return { error: null };
 }

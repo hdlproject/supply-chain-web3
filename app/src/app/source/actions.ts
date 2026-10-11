@@ -5,6 +5,7 @@ import BN from "bn.js";
 import { newBatchId } from "@/lib/batch-id";
 import { sourceTypeFormArg } from "@/lib/format";
 import { getProgramForWallet, type SigningWallet } from "@/lib/program";
+import { describeTxError } from "@/lib/tx-error";
 
 const SOURCE_TYPES = ["Farmer", "Factory", "TraditionalMarket", "Supermarket"] as const;
 
@@ -41,7 +42,7 @@ export async function registerBatch(
       .accounts({ source: wallet.publicKey })
       .rpc();
   } catch (error) {
-    return { error: error instanceof Error ? error.message : "Failed to register batch." };
+    return { error: describeTxError(error, "Failed to register batch.") };
   }
   return { error: null };
 }

@@ -4,6 +4,7 @@ import { PublicKey } from "@solana/web3.js";
 
 import { roleFormArg } from "@/lib/format";
 import { getProgramForWallet, type SigningWallet } from "@/lib/program";
+import { describeTxError } from "@/lib/tx-error";
 
 type AssignableRole = "Admin" | "Source" | "Carrier" | "Restaurant";
 
@@ -33,7 +34,7 @@ export async function grantRole(
       .accounts({ admin: wallet.publicKey })
       .rpc();
   } catch (error) {
-    return { error: error instanceof Error ? error.message : "Failed to grant role." };
+    return { error: describeTxError(error, "Failed to grant role.") };
   }
   return { error: null };
 }
@@ -53,7 +54,7 @@ export async function revokeRole(
       .accounts({ admin: wallet.publicKey })
       .rpc();
   } catch (error) {
-    return { error: error instanceof Error ? error.message : "Failed to revoke role." };
+    return { error: describeTxError(error, "Failed to revoke role.") };
   }
   return { error: null };
 }

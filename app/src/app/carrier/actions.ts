@@ -2,6 +2,7 @@
 
 import { hexToBatchId } from "@/lib/batch-id";
 import { batchPda, getProgramForWallet, type SigningWallet } from "@/lib/program";
+import { describeTxError } from "@/lib/tx-error";
 
 export async function logMovement(
   wallet: SigningWallet,
@@ -46,7 +47,7 @@ export async function logMovement(
       .accounts({ carrier: wallet.publicKey, batch })
       .rpc();
   } catch (error) {
-    return { error: error instanceof Error ? error.message : "Failed to log movement." };
+    return { error: describeTxError(error, "Failed to log movement.") };
   }
   return { error: null };
 }
