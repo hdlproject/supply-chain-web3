@@ -17,6 +17,7 @@ const CONFIG_SEED = Buffer.from("config");
 const ROLE_SEED = Buffer.from("role");
 const BATCH_SEED = Buffer.from("batch");
 const MOVEMENT_SEED = Buffer.from("movement");
+const PRODUCT_SEED = Buffer.from("product");
 
 export function getRpcUrl(): string {
   return process.env.NEXT_PUBLIC_SOLANA_RPC_URL ?? "http://127.0.0.1:8899";
@@ -145,4 +146,11 @@ export function movementPda(
     [MOVEMENT_SEED, batch.toBuffer(), countBytes],
     programId,
   );
+}
+
+export function productPda(
+  skuCode: string,
+  programId: PublicKey = getProgramId(),
+): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync([PRODUCT_SEED, Buffer.from(skuCode)], programId);
 }

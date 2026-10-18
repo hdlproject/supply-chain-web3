@@ -1,6 +1,6 @@
 import type { PublicKey } from "@solana/web3.js";
 
-import { batchPda, configPda, getReadProgram, roleAssignmentPda } from "./program";
+import { batchPda, configPda, getReadProgram, productPda, roleAssignmentPda } from "./program";
 
 export async function fetchConfig() {
   const program = getReadProgram();
@@ -28,6 +28,19 @@ export async function fetchAllBatches() {
 }
 
 export type BatchEntry = Awaited<ReturnType<typeof fetchAllBatches>>[number];
+
+export async function fetchProduct(skuCode: string) {
+  const program = getReadProgram();
+  const [pda] = productPda(skuCode);
+  return program.account.product.fetchNullable(pda);
+}
+
+export async function fetchAllProducts() {
+  const program = getReadProgram();
+  return program.account.product.all();
+}
+
+export type ProductEntry = Awaited<ReturnType<typeof fetchAllProducts>>[number];
 
 export async function fetchBatchesBySource(wallet: PublicKey): Promise<BatchEntry[]> {
   const all = await fetchAllBatches();
@@ -58,3 +71,13 @@ export async function fetchMovementsForBatch(batch: PublicKey) {
 }
 
 export type MovementRecord = Awaited<ReturnType<typeof fetchMovementsForBatch>>[number];
+
+export async function fetchLineItemsForBatch(batch: PublicKey) {
+  const program = getReadProgram();
+  const entries = await program.account.lineItem.all([
+    { memcmp: { offset: 8, bytes: batch.toBase58() } },
+  ]);
+  return entries.map((entry) => entry.account).sort((a, b) => a.index - b.index);
+}
+
+export type LineItemRecord = Awaited<ReturnType<typeof fetchLineItemsForBatch>>[number];

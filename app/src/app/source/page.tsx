@@ -15,7 +15,7 @@ export default async function SourcePage() {
       <div className="page layout-split">
         <div className="panel-narrow card">
           <div className="section-title">Register batch</div>
-          <div className="section-sub">register_batch(id, name, qty, source_type)</div>
+          <div className="section-sub">register_batch(id, source_type, line_item_count)</div>
           <RegisterBatchForm />
         </div>
         <div className="panel-wide card">

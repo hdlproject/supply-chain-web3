@@ -14,6 +14,124 @@ export type SupplyChainWeb3 = {
   },
   "instructions": [
     {
+      "name": "addLineItem",
+      "discriminator": [
+        133,
+        114,
+        152,
+        31,
+        119,
+        9,
+        92,
+        165
+      ],
+      "accounts": [
+        {
+          "name": "source",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "batch"
+          ]
+        },
+        {
+          "name": "roleAssignment",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "source"
+              }
+            ]
+          }
+        },
+        {
+          "name": "batch",
+          "writable": true
+        },
+        {
+          "name": "product",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  100,
+                  117,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "skuCode"
+              }
+            ]
+          }
+        },
+        {
+          "name": "lineItem",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  110,
+                  101,
+                  95,
+                  105,
+                  116,
+                  101,
+                  109
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "batch"
+              },
+              {
+                "kind": "arg",
+                "path": "index"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "index",
+          "type": "u16"
+        },
+        {
+          "name": "skuCode",
+          "type": "string"
+        },
+        {
+          "name": "quantity",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "grantRole",
       "discriminator": [
         218,
@@ -377,20 +495,94 @@ export type SupplyChainWeb3 = {
           }
         },
         {
-          "name": "ingredientName",
-          "type": "string"
-        },
-        {
-          "name": "quantity",
-          "type": "u64"
-        },
-        {
           "name": "sourceType",
           "type": {
             "defined": {
               "name": "sourceType"
             }
           }
+        },
+        {
+          "name": "lineItemCount",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "registerProduct",
+      "discriminator": [
+        224,
+        97,
+        195,
+        220,
+        124,
+        218,
+        78,
+        43
+      ],
+      "accounts": [
+        {
+          "name": "registrant",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "roleAssignment",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "registrant"
+              }
+            ]
+          }
+        },
+        {
+          "name": "product",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  100,
+                  117,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "skuCode"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "skuCode",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
         }
       ]
     },
@@ -497,6 +689,19 @@ export type SupplyChainWeb3 = {
       ]
     },
     {
+      "name": "lineItem",
+      "discriminator": [
+        188,
+        57,
+        119,
+        204,
+        240,
+        30,
+        22,
+        191
+      ]
+    },
+    {
       "name": "movement",
       "discriminator": [
         137,
@@ -507,6 +712,19 @@ export type SupplyChainWeb3 = {
         21,
         188,
         45
+      ]
+    },
+    {
+      "name": "product",
+      "discriminator": [
+        102,
+        76,
+        55,
+        251,
+        38,
+        73,
+        224,
+        229
       ]
     },
     {
@@ -548,6 +766,11 @@ export type SupplyChainWeb3 = {
       "code": 6004,
       "name": "roleNotHeld",
       "msg": "Wallet does not hold the role being revoked"
+    },
+    {
+      "code": 6005,
+      "name": "lineItemIndexOutOfRange",
+      "msg": "Line item index is not less than the batch's declared line_item_count"
     }
   ],
   "types": [
@@ -564,14 +787,6 @@ export type SupplyChainWeb3 = {
                 16
               ]
             }
-          },
-          {
-            "name": "ingredientName",
-            "type": "string"
-          },
-          {
-            "name": "quantity",
-            "type": "u64"
           },
           {
             "name": "sourceType",
@@ -608,6 +823,10 @@ export type SupplyChainWeb3 = {
           {
             "name": "deliveredAt",
             "type": "i64"
+          },
+          {
+            "name": "lineItemCount",
+            "type": "u16"
           }
         ]
       }
@@ -637,6 +856,30 @@ export type SupplyChainWeb3 = {
           {
             "name": "bootstrapAuthority",
             "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "lineItem",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "batch",
+            "type": "pubkey"
+          },
+          {
+            "name": "index",
+            "type": "u16"
+          },
+          {
+            "name": "product",
+            "type": "pubkey"
+          },
+          {
+            "name": "quantity",
+            "type": "u64"
           }
         ]
       }
@@ -677,6 +920,22 @@ export type SupplyChainWeb3 = {
           {
             "name": "timestamp",
             "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "product",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "skuCode",
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "type": "string"
           }
         ]
       }
@@ -762,9 +1021,19 @@ export type SupplyChainWeb3 = {
       "value": "[99, 111, 110, 102, 105, 103]"
     },
     {
+      "name": "lineItemSeed",
+      "type": "bytes",
+      "value": "[108, 105, 110, 101, 95, 105, 116, 101, 109]"
+    },
+    {
       "name": "movementSeed",
       "type": "bytes",
       "value": "[109, 111, 118, 101, 109, 101, 110, 116]"
+    },
+    {
+      "name": "productSeed",
+      "type": "bytes",
+      "value": "[112, 114, 111, 100, 117, 99, 116]"
     },
     {
       "name": "roleSeed",

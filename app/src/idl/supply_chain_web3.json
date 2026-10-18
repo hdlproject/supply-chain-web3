@@ -8,6 +8,124 @@
   },
   "instructions": [
     {
+      "name": "add_line_item",
+      "discriminator": [
+        133,
+        114,
+        152,
+        31,
+        119,
+        9,
+        92,
+        165
+      ],
+      "accounts": [
+        {
+          "name": "source",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "batch"
+          ]
+        },
+        {
+          "name": "role_assignment",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "source"
+              }
+            ]
+          }
+        },
+        {
+          "name": "batch",
+          "writable": true
+        },
+        {
+          "name": "product",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  100,
+                  117,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "sku_code"
+              }
+            ]
+          }
+        },
+        {
+          "name": "line_item",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  105,
+                  110,
+                  101,
+                  95,
+                  105,
+                  116,
+                  101,
+                  109
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "batch"
+              },
+              {
+                "kind": "arg",
+                "path": "index"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "index",
+          "type": "u16"
+        },
+        {
+          "name": "sku_code",
+          "type": "string"
+        },
+        {
+          "name": "quantity",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "grant_role",
       "discriminator": [
         218,
@@ -371,20 +489,94 @@
           }
         },
         {
-          "name": "ingredient_name",
-          "type": "string"
-        },
-        {
-          "name": "quantity",
-          "type": "u64"
-        },
-        {
           "name": "source_type",
           "type": {
             "defined": {
               "name": "SourceType"
             }
           }
+        },
+        {
+          "name": "line_item_count",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "register_product",
+      "discriminator": [
+        224,
+        97,
+        195,
+        220,
+        124,
+        218,
+        78,
+        43
+      ],
+      "accounts": [
+        {
+          "name": "registrant",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "role_assignment",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  108,
+                  101
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "registrant"
+              }
+            ]
+          }
+        },
+        {
+          "name": "product",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  100,
+                  117,
+                  99,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "sku_code"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "sku_code",
+          "type": "string"
+        },
+        {
+          "name": "name",
+          "type": "string"
         }
       ]
     },
@@ -491,6 +683,19 @@
       ]
     },
     {
+      "name": "LineItem",
+      "discriminator": [
+        188,
+        57,
+        119,
+        204,
+        240,
+        30,
+        22,
+        191
+      ]
+    },
+    {
       "name": "Movement",
       "discriminator": [
         137,
@@ -501,6 +706,19 @@
         21,
         188,
         45
+      ]
+    },
+    {
+      "name": "Product",
+      "discriminator": [
+        102,
+        76,
+        55,
+        251,
+        38,
+        73,
+        224,
+        229
       ]
     },
     {
@@ -542,6 +760,11 @@
       "code": 6004,
       "name": "RoleNotHeld",
       "msg": "Wallet does not hold the role being revoked"
+    },
+    {
+      "code": 6005,
+      "name": "LineItemIndexOutOfRange",
+      "msg": "Line item index is not less than the batch's declared line_item_count"
     }
   ],
   "types": [
@@ -558,14 +781,6 @@
                 16
               ]
             }
-          },
-          {
-            "name": "ingredient_name",
-            "type": "string"
-          },
-          {
-            "name": "quantity",
-            "type": "u64"
           },
           {
             "name": "source_type",
@@ -602,6 +817,10 @@
           {
             "name": "delivered_at",
             "type": "i64"
+          },
+          {
+            "name": "line_item_count",
+            "type": "u16"
           }
         ]
       }
@@ -631,6 +850,30 @@
           {
             "name": "bootstrap_authority",
             "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LineItem",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "batch",
+            "type": "pubkey"
+          },
+          {
+            "name": "index",
+            "type": "u16"
+          },
+          {
+            "name": "product",
+            "type": "pubkey"
+          },
+          {
+            "name": "quantity",
+            "type": "u64"
           }
         ]
       }
@@ -671,6 +914,22 @@
           {
             "name": "timestamp",
             "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Product",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sku_code",
+            "type": "string"
+          },
+          {
+            "name": "name",
+            "type": "string"
           }
         ]
       }
@@ -756,9 +1015,19 @@
       "value": "[99, 111, 110, 102, 105, 103]"
     },
     {
+      "name": "LINE_ITEM_SEED",
+      "type": "bytes",
+      "value": "[108, 105, 110, 101, 95, 105, 116, 101, 109]"
+    },
+    {
       "name": "MOVEMENT_SEED",
       "type": "bytes",
       "value": "[109, 111, 118, 101, 109, 101, 110, 116]"
+    },
+    {
+      "name": "PRODUCT_SEED",
+      "type": "bytes",
+      "value": "[112, 114, 111, 100, 117, 99, 116]"
     },
     {
       "name": "ROLE_SEED",

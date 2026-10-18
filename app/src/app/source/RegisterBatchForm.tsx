@@ -15,14 +15,12 @@ export function RegisterBatchForm() {
   const handleSubmit = useWalletGatedAction<FormData>(async (wallet, formData) => {
     setPending(true);
     setError(null);
-    const ingredientName = String(formData.get("ingredientName") ?? "").trim();
-    const quantity = String(formData.get("quantity") ?? "").trim();
     const sourceType = String(formData.get("sourceType") ?? "") as
       | "Farmer"
       | "Factory"
       | "TraditionalMarket"
       | "Supermarket";
-    const result = await registerBatch(wallet, ingredientName, quantity, sourceType);
+    const result = await registerBatch(wallet, sourceType);
     setPending(false);
     if (result.error) {
       setError(result.error);
@@ -33,21 +31,6 @@ export function RegisterBatchForm() {
 
   return (
     <form action={handleSubmit}>
-      <div className="field">
-        <label htmlFor="ingredientName">Ingredient name</label>
-        <input
-          id="ingredientName"
-          name="ingredientName"
-          type="text"
-          maxLength={64}
-          placeholder="e.g. Heirloom tomatoes"
-          required
-        />
-      </div>
-      <div className="field">
-        <label htmlFor="quantity">Quantity</label>
-        <input id="quantity" name="quantity" type="number" min={0} step={1} placeholder="e.g. 240" required />
-      </div>
       <div className="field">
         <label htmlFor="sourceType">Source type</label>
         <select id="sourceType" name="sourceType" required defaultValue="Farmer">

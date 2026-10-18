@@ -26,8 +26,6 @@ export default async function RestaurantPage() {
               <thead>
                 <tr>
                   <th>Batch ID</th>
-                  <th>Ingredient</th>
-                  <th>Qty</th>
                   <th>Status</th>
                   <th style={{ textAlign: "right" }}>Action</th>
                 </tr>
@@ -38,8 +36,6 @@ export default async function RestaurantPage() {
                   return (
                     <tr key={publicKey.toBase58()}>
                       <td className="mono">{shortBatchId(hexId)}</td>
-                      <td>{account.ingredientName}</td>
-                      <td>{account.quantity.toString()}</td>
                       <td>
                         <StatusBadge status={account.status} />
                       </td>

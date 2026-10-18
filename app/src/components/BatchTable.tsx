@@ -22,8 +22,6 @@ export function BatchTable({
       <thead>
         <tr>
           <th>Batch ID</th>
-          <th>Ingredient</th>
-          <th>Qty</th>
           <th>Source type</th>
           {showSource ? <th>Registered by</th> : null}
           <th>Status</th>
@@ -36,8 +34,6 @@ export function BatchTable({
           return (
             <tr key={publicKey.toBase58()}>
               <td className="mono">{shortBatchId(hexId)}</td>
-              <td>{account.ingredientName}</td>
-              <td>{account.quantity.toString()}</td>
               <td>{sourceTypeLabel(account.sourceType)}</td>
               {showSource ? (
                 <td className="mono">

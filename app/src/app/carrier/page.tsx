@@ -17,7 +17,7 @@ export default async function CarrierPage() {
     .filter((entry) => !("delivered" in entry.account.status))
     .map((entry) => {
       const hexId = batchIdToHex(Uint8Array.from(entry.account.batchId));
-      return { value: hexId, label: `${shortBatchId(hexId)} — ${entry.account.ingredientName}` };
+      return { value: hexId, label: `${shortBatchId(hexId)}` };
     });
 
   const sortedMovements = movements

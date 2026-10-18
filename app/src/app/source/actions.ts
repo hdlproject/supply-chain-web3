@@ -1,7 +1,5 @@
 "use client";
 
-import BN from "bn.js";
-
 import { newBatchId } from "@/lib/batch-id";
 import { sourceTypeFormArg } from "@/lib/format";
 import { getProgramForWallet, type SigningWallet } from "@/lib/program";
@@ -11,16 +9,8 @@ const SOURCE_TYPES = ["Farmer", "Factory", "TraditionalMarket", "Supermarket"] a
 
 export async function registerBatch(
   wallet: SigningWallet,
-  ingredientName: string,
-  quantityInput: string,
   sourceType: (typeof SOURCE_TYPES)[number],
 ): Promise<{ error: string | null }> {
-  if (!ingredientName || ingredientName.length > 64) {
-    return { error: "Ingredient name is required and must be 64 characters or fewer." };
-  }
-  if (!/^\d+$/.test(quantityInput)) {
-    return { error: "Quantity must be a whole number." };
-  }
   if (!SOURCE_TYPES.includes(sourceType)) {
     return { error: "Choose a source type." };
   }
@@ -35,9 +25,8 @@ export async function registerBatch(
     await program.methods
       .registerBatch(
         Array.from(batchIdBytes),
-        ingredientName,
-        new BN(quantityInput),
         sourceTypeFormArg(sourceType) as never,
+        0, // lineItemCount - will be set by add_line_item calls
       )
       .accounts({ source: wallet.publicKey })
       .rpc();

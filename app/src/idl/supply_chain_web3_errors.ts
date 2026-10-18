@@ -4,7 +4,8 @@ export const SupplyChainWeb3ErrorCode = {
   StringTooLong: 6001,
   InvalidStatusTransition: 6002,
   InvalidMovementInput: 6003,
-  RoleNotHeld: 6004
+  RoleNotHeld: 6004,
+  LineItemIndexOutOfRange: 6005
 };
 
 export type SupplyChainWeb3ErrorName = keyof typeof SupplyChainWeb3ErrorCode;

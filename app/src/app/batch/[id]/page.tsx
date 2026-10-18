@@ -51,9 +51,6 @@ export default async function BatchDetailPage({
             <div className="mono" style={{ fontSize: 13, color: "var(--muted-2)", marginBottom: 6 }}>
               Batch {shortBatchId(id)}
             </div>
-            <div style={{ fontSize: 24, fontWeight: 700, marginBottom: 10 }}>
-              {batch.ingredientName}
-            </div>
             <StatusBadge status={batch.status} />
           </div>
 
@@ -64,9 +61,9 @@ export default async function BatchDetailPage({
             <div className="field-grid">
               <div>
                 <div className="section-sub" style={{ marginBottom: 4 }}>
-                  Quantity
+                  Line Items
                 </div>
-                <div style={{ fontWeight: 600 }}>{batch.quantity.toString()}</div>
+                <div style={{ fontWeight: 600 }}>{batch.lineItemCount}</div>
               </div>
               <div>
                 <div className="section-sub" style={{ marginBottom: 4 }}>
