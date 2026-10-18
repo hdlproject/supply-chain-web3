@@ -9,7 +9,7 @@ use {
     solana_message::{Message, VersionedMessage},
     solana_signer::Signer,
     solana_transaction::versioned::VersionedTransaction,
-    supply_chain_web3::state::{Product, Role},
+    supply_chain_web3::state::Product,
 };
 
 fn new_svm_with_payer() -> (LiteSVM, Keypair) {
