@@ -103,9 +103,8 @@ fn register_batch(svm: &mut LiteSVM, source: &Keypair, batch_id: [u8; 16]) -> Pu
         program_id,
         &supply_chain_web3::instruction::RegisterBatch {
             batch_id,
-            ingredient_name: "Basil".to_string(),
-            quantity: 5,
             source_type: SourceType::Farmer,
+            line_item_count: 0,
         }
         .data(),
         supply_chain_web3::accounts::RegisterBatch {

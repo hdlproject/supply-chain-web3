@@ -25,3 +25,6 @@ pub const MAX_ID_LEN: usize = 32;
 pub const PRODUCT_SEED: &[u8] = b"product";
 
 pub const MAX_SKU_CODE_LEN: usize = 32;
+
+#[constant]
+pub const LINE_ITEM_SEED: &[u8] = b"line_item";

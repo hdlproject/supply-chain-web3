@@ -34,17 +34,24 @@ pub mod supply_chain_web3 {
     pub fn register_batch(
         ctx: Context<RegisterBatch>,
         batch_id: [u8; 16],
-        ingredient_name: String,
-        quantity: u64,
         source_type: SourceType,
+        line_item_count: u16,
     ) -> Result<()> {
         crate::instructions::register_batch::handle_register_batch(
             ctx,
             batch_id,
-            ingredient_name,
-            quantity,
             source_type,
+            line_item_count,
         )
+    }
+
+    pub fn add_line_item(
+        ctx: Context<AddLineItem>,
+        index: u16,
+        sku_code: String,
+        quantity: u64,
+    ) -> Result<()> {
+        crate::instructions::add_line_item::handle_add_line_item(ctx, index, sku_code, quantity)
     }
 
     pub fn log_movement(

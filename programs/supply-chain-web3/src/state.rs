@@ -54,9 +54,6 @@ pub enum BatchStatus {
 #[derive(InitSpace)]
 pub struct Batch {
     pub batch_id: [u8; 16],
-    #[max_len(MAX_INGREDIENT_NAME_LEN)]
-    pub ingredient_name: String,
-    pub quantity: u64,
     pub source_type: SourceType,
     pub source: Pubkey,
     pub status: BatchStatus,
@@ -64,6 +61,16 @@ pub struct Batch {
     pub received_by: Pubkey,
     pub created_at: i64,
     pub delivered_at: i64,
+    pub line_item_count: u16,
+}
+
+#[account]
+#[derive(InitSpace)]
+pub struct LineItem {
+    pub batch: Pubkey,
+    pub index: u16,
+    pub product: Pubkey,
+    pub quantity: u64,
 }
 
 #[account]

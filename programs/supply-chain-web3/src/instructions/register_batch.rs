@@ -27,23 +27,16 @@ pub struct RegisterBatch<'info> {
 pub fn handle_register_batch(
     ctx: Context<RegisterBatch>,
     batch_id: [u8; 16],
-    ingredient_name: String,
-    quantity: u64,
     source_type: SourceType,
+    line_item_count: u16,
 ) -> Result<()> {
     require!(
         ctx.accounts.role_assignment.is_source,
         ErrorCode::Unauthorized,
     );
-    require!(
-        ingredient_name.len() <= MAX_INGREDIENT_NAME_LEN,
-        ErrorCode::StringTooLong,
-    );
 
     let batch = &mut ctx.accounts.batch;
     batch.batch_id = batch_id;
-    batch.ingredient_name = ingredient_name;
-    batch.quantity = quantity;
     batch.source_type = source_type;
     batch.source = ctx.accounts.source.key();
     batch.status = BatchStatus::Registered;
@@ -51,5 +44,6 @@ pub fn handle_register_batch(
     batch.received_by = Pubkey::default();
     batch.created_at = Clock::get()?.unix_timestamp;
     batch.delivered_at = 0;
+    batch.line_item_count = line_item_count;
     Ok(())
 }
