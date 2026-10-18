@@ -29,6 +29,9 @@ export function NavBar({
             <RoleBadge role={role} active={role === activeRole} />
           </Link>
         ))}
+        <Link href="/products" style={{ color: "var(--muted)", fontSize: 13 }}>
+          Products
+        </Link>
         <span className="wallet">{shortWallet(wallet)}</span>
         <form action={logoutAction}>
           <button type="submit" className="link-button">
