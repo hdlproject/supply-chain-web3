@@ -62,8 +62,7 @@ export async function registerBatch(
       plan.items.map((item) =>
         program.methods
           .addLineItem(item.index, item.skuCode, new BN(item.quantity))
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .accounts({ source: wallet.publicKey, batch: batchAccount } as any)
+          .accounts({ batch: batchAccount })
           .instruction(),
       ),
     );
