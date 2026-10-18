@@ -26,6 +26,15 @@ pub struct RoleAssignment {
     pub is_restaurant: bool,
 }
 
+#[account]
+#[derive(InitSpace)]
+pub struct Product {
+    #[max_len(MAX_SKU_CODE_LEN)]
+    pub sku_code: String,
+    #[max_len(MAX_INGREDIENT_NAME_LEN)]
+    pub name: String,
+}
+
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, Debug, InitSpace)]
 pub enum SourceType {
     Farmer,

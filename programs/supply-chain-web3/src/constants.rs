@@ -20,3 +20,8 @@ pub const MOVEMENT_SEED: &[u8] = b"movement";
 pub const MAX_LOCATION_LEN: usize = 64;
 
 pub const MAX_ID_LEN: usize = 32;
+
+#[constant]
+pub const PRODUCT_SEED: &[u8] = b"product";
+
+pub const MAX_SKU_CODE_LEN: usize = 32;

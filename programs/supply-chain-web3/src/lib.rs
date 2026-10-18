@@ -27,6 +27,10 @@ pub mod supply_chain_web3 {
         crate::instructions::revoke_role::handle_revoke_role(ctx, wallet, role)
     }
 
+    pub fn register_product(ctx: Context<RegisterProduct>, sku_code: String, name: String) -> Result<()> {
+        crate::instructions::register_product::handle_register_product(ctx, sku_code, name)
+    }
+
     pub fn register_batch(
         ctx: Context<RegisterBatch>,
         batch_id: [u8; 16],
