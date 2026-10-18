@@ -2,11 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PublicKey } from "@solana/web3.js";
 
-import { fetchBatch, fetchMovementsForBatch } from "@/lib/accounts";
+import { fetchBatch, fetchLineItemsForBatch, fetchMovementsForBatch } from "@/lib/accounts";
 import { hexToBatchId, shortBatchId } from "@/lib/batch-id";
 import { formatTimestamp, shortWallet, sourceTypeLabel } from "@/lib/format";
 import { requireSession } from "@/lib/guard";
-import { batchPda } from "@/lib/program";
+import { batchPda, getReadProgram } from "@/lib/program";
 import { MovementTimeline } from "@/components/MovementTimeline";
 import { StatusBadge } from "@/components/StatusBadge";
 
@@ -32,6 +32,10 @@ export default async function BatchDetailPage({
 
   const [batchAddress] = batchPda(batchIdBytes);
   const movements = await fetchMovementsForBatch(batchAddress);
+  const lineItems = await fetchLineItemsForBatch(batchAddress);
+  const products = await Promise.all(
+    lineItems.map((item) => getReadProgram().account.product.fetchNullable(item.product)),
+  );
   const isReceived = !batch.receivedBy.equals(PublicKey.default);
 
   return (
@@ -59,12 +63,6 @@ export default async function BatchDetailPage({
               Batch fields
             </div>
             <div className="field-grid">
-              <div>
-                <div className="section-sub" style={{ marginBottom: 4 }}>
-                  Line Items
-                </div>
-                <div style={{ fontWeight: 600 }}>{batch.lineItemCount}</div>
-              </div>
               <div>
                 <div className="section-sub" style={{ marginBottom: 4 }}>
                   Source type
@@ -104,6 +102,30 @@ export default async function BatchDetailPage({
                 </>
               ) : null}
             </div>
+          </div>
+
+          <div className="card">
+            <div className="section-title" style={{ marginBottom: 16 }}>
+              Products in this batch
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>SKU code</th>
+                  <th>Name</th>
+                  <th>Quantity</th>
+                </tr>
+              </thead>
+              <tbody>
+                {lineItems.map((item, i) => (
+                  <tr key={item.index}>
+                    <td className="mono">{products[i]?.skuCode ?? "—"}</td>
+                    <td>{products[i]?.name ?? "—"}</td>
+                    <td>{item.quantity.toString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 

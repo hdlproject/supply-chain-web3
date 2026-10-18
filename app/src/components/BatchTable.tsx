@@ -22,6 +22,7 @@ export function BatchTable({
       <thead>
         <tr>
           <th>Batch ID</th>
+          <th>Items</th>
           <th>Source type</th>
           {showSource ? <th>Registered by</th> : null}
           <th>Status</th>
@@ -34,6 +35,7 @@ export function BatchTable({
           return (
             <tr key={publicKey.toBase58()}>
               <td className="mono">{shortBatchId(hexId)}</td>
+              <td>{account.lineItemCount} product{account.lineItemCount === 1 ? "" : "s"}</td>
               <td>{sourceTypeLabel(account.sourceType)}</td>
               {showSource ? (
                 <td className="mono">
