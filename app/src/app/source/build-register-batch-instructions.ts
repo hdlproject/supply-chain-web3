@@ -29,8 +29,12 @@ export function planLineItems(rows: ProductRow[], existingSkuCodes: Set<string>)
     items.push({ index, skuCode, quantity: row.quantity.trim() });
 
     if (!existingSkuCodes.has(skuCode) && !seenNewCodes.has(skuCode)) {
+      const name = row.name.trim();
+      if (!name) {
+        throw new Error(`Row ${index + 1}: name is required for a new SKU.`);
+      }
       seenNewCodes.add(skuCode);
-      newProducts.push({ skuCode, name: row.name.trim() });
+      newProducts.push({ skuCode, name });
     }
   });
 

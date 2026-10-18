@@ -43,6 +43,7 @@ pub fn handle_register_product(
     // a call that was only ever going to be a no-op anyway.
     let product = &mut ctx.accounts.product;
     if product.sku_code.is_empty() {
+        require!(!sku_code.is_empty(), ErrorCode::StringTooLong);
         require!(name.len() <= MAX_INGREDIENT_NAME_LEN, ErrorCode::StringTooLong);
         product.sku_code = sku_code;
         product.name = name;

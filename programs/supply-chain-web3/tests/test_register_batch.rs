@@ -204,7 +204,6 @@ fn test_register_batch_with_line_items_happy_path() {
     // line items (one referencing the brand-new SKU, one referencing an
     // already-existing one) -- exactly the atomic composition this
     // feature is built around.
-    register_product_ix(admin.pubkey(), admin_role, "RICE-JASMINE-5KG", "Jasmine Rice 5kg");
     let blockhash = svm.latest_blockhash();
     let seed_product = register_product_ix(admin.pubkey(), admin_role, "RICE-JASMINE-5KG", "Jasmine Rice 5kg");
     let msg = Message::new_with_blockhash(&[seed_product], Some(&admin.pubkey()), &blockhash);

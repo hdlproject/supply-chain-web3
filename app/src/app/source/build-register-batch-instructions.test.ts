@@ -42,4 +42,9 @@ describe("planLineItems", () => {
     const rows: ProductRow[] = [{ skuCode: "SKU", name: "x", quantity: "abc" }];
     expect(() => planLineItems(rows, existing)).toThrow(/quantity/i);
   });
+
+  it("rejects a row with an unknown sku code and a blank name", () => {
+    const rows: ProductRow[] = [{ skuCode: "BRAND-NEW", name: "  ", quantity: "1" }];
+    expect(() => planLineItems(rows, existing)).toThrow(/name is required/i);
+  });
 });

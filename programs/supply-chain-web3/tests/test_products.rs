@@ -148,6 +148,18 @@ fn test_register_product_rejects_name_too_long() {
 }
 
 #[test]
+fn test_register_product_rejects_empty_sku_code() {
+    let (mut svm, admin) = new_svm_with_payer();
+    let admin_role = init_config(&mut svm, &admin);
+
+    let instruction = register_product_ix(admin.pubkey(), admin_role, "", "Anything");
+    let blockhash = svm.latest_blockhash();
+    let msg = Message::new_with_blockhash(&[instruction], Some(&admin.pubkey()), &blockhash);
+    let tx = VersionedTransaction::try_new(VersionedMessage::Legacy(msg), &[&admin]).unwrap();
+    assert!(svm.send_transaction(tx).is_err());
+}
+
+#[test]
 fn test_register_product_rejects_role_less_wallet() {
     let (mut svm, _admin) = new_svm_with_payer();
     let stranger = Keypair::new();

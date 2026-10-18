@@ -33,8 +33,9 @@ export default async function BatchDetailPage({
   const [batchAddress] = batchPda(batchIdBytes);
   const movements = await fetchMovementsForBatch(batchAddress);
   const lineItems = await fetchLineItemsForBatch(batchAddress);
+  const program = getReadProgram();
   const products = await Promise.all(
-    lineItems.map((item) => getReadProgram().account.product.fetchNullable(item.product)),
+    lineItems.map((item) => program.account.product.fetchNullable(item.product)),
   );
   const isReceived = !batch.receivedBy.equals(PublicKey.default);
 
@@ -108,24 +109,28 @@ export default async function BatchDetailPage({
             <div className="section-title" style={{ marginBottom: 16 }}>
               Products in this batch
             </div>
-            <table>
-              <thead>
-                <tr>
-                  <th>SKU code</th>
-                  <th>Name</th>
-                  <th>Quantity</th>
-                </tr>
-              </thead>
-              <tbody>
-                {lineItems.map((item, i) => (
-                  <tr key={item.index}>
-                    <td className="mono">{products[i]?.skuCode ?? "—"}</td>
-                    <td>{products[i]?.name ?? "—"}</td>
-                    <td>{item.quantity.toString()}</td>
+            {lineItems.length === 0 ? (
+              <div className="empty-state">No products on this batch.</div>
+            ) : (
+              <table>
+                <thead>
+                  <tr>
+                    <th>SKU code</th>
+                    <th>Name</th>
+                    <th>Quantity</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {lineItems.map((item, i) => (
+                    <tr key={item.index}>
+                      <td className="mono">{products[i]?.skuCode ?? "—"}</td>
+                      <td>{products[i]?.name ?? "—"}</td>
+                      <td>{item.quantity.toString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
 

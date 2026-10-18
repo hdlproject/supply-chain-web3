@@ -10,7 +10,11 @@ import type { ProductRow } from "./build-register-batch-instructions";
 
 const EMPTY_ROW: ProductRow = { skuCode: "", name: "", quantity: "" };
 
-export function RegisterBatchForm() {
+export function RegisterBatchForm({
+  products,
+}: {
+  products: { skuCode: string; name: string }[];
+}) {
   const router = useRouter();
   const [rows, setRows] = useState<ProductRow[]>([{ ...EMPTY_ROW }]);
   const [sourceType, setSourceType] = useState<
@@ -38,6 +42,13 @@ export function RegisterBatchForm() {
 
   return (
     <div>
+      <datalist id="existing-products">
+        {products.map((p) => (
+          <option key={p.skuCode} value={p.skuCode}>
+            {p.name}
+          </option>
+        ))}
+      </datalist>
       <div className="field">
         <label htmlFor="sourceType">Source type</label>
         <select
@@ -62,6 +73,7 @@ export function RegisterBatchForm() {
               type="text"
               maxLength={32}
               placeholder="existing or brand-new code"
+              list="existing-products"
               value={row.skuCode}
               onChange={(e) => updateRow(index, { skuCode: e.target.value })}
               required
