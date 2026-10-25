@@ -82,7 +82,10 @@ export function formatTimestamp(seconds: BN | number): string {
   });
 }
 
-export function shortWallet(pubkey: { toBase58(): string }): string {
-  const base58 = pubkey.toBase58();
+export function shortWalletString(base58: string): string {
   return `${base58.slice(0, 4)}…${base58.slice(-4)}`;
+}
+
+export function shortWallet(pubkey: { toBase58(): string }): string {
+  return shortWalletString(pubkey.toBase58());
 }

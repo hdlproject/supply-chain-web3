@@ -22,6 +22,15 @@ export async function fetchBatch(batchIdBytes: Uint8Array) {
 
 export type BatchAccountDecoded = NonNullable<Awaited<ReturnType<typeof fetchBatch>>>;
 
+// A Movement only stores the Batch's PDA address, not its 16-byte
+// batch_id -- fetchBatch derives the PDA FROM a batch_id, so it's the
+// wrong tool for resolving "which batch does this movement belong to".
+// This looks the account up directly by the address already in hand.
+export async function fetchBatchByAddress(address: PublicKey) {
+  const program = getReadProgram();
+  return program.account.batch.fetchNullable(address);
+}
+
 export async function fetchAllBatches() {
   const program = getReadProgram();
   return program.account.batch.all();
@@ -50,6 +59,11 @@ export async function fetchBatchesBySource(wallet: PublicKey): Promise<BatchEntr
 export async function fetchInTransitBatches(): Promise<BatchEntry[]> {
   const all = await fetchAllBatches();
   return all.filter((entry) => "inTransit" in entry.account.status);
+}
+
+export async function fetchBatchesReceivedBy(wallet: PublicKey): Promise<BatchEntry[]> {
+  const all = await fetchAllBatches();
+  return all.filter((entry) => entry.account.receivedBy.equals(wallet));
 }
 
 export async function fetchMovementsByCarrier(wallet: PublicKey) {
