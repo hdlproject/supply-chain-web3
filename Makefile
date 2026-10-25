@@ -1,4 +1,4 @@
- .PHONY: help build test validator deploy deploy-as airdrop fmt lint clean idl web stop-web phantom-key
+ .PHONY: help build test validator deploy deploy-as airdrop fmt lint clean idl web stop-web phantom-key provision
 
 PROGRAM_DIR := programs/supply-chain-web3
 PROGRAM_SO := target/deploy/supply_chain_web3.so
@@ -10,12 +10,17 @@ help:
 	@echo "Targets:"
 	@echo "  make build      - build the on-chain program (.so)"
 	@echo "  make test       - build, then run the full test suite"
-	@echo "  make validator  - start a local solana-test-validator in the background"
+	@echo "  make validator [RESET=1] - start a local solana-test-validator (resumes"
+	@echo "                     existing ledger state by default; RESET=1 wipes it)."
+	@echo "                     If one's already running, attaches to it instead:"
+	@echo "                     Ctrl-C then stops it, same as if it had been started here."
 	@echo "  make deploy     - build, then deploy to localnet (needs 'make validator' running)"
 	@echo "  make deploy-as [WALLET=<path>] - build, then deploy using WALLET (defaults to"
 	@echo "                     $(PHANTOM_KEY_PATH)) as --provider.wallet"
 	@echo "  make airdrop    - airdrop 2 SOL to the configured wallet on localnet"
 	@echo "  make idl        - regenerate the Anchor IDL into app/src/idl/"
+	@echo "  make provision  - bootstrap the wallet at PHANTOM_KEY_PATH on-chain"
+	@echo "                     with all 4 roles (Admin+Source+Carrier+Restaurant)"
 	@echo "  make web        - stop any existing dev server on port $(WEB_PORT), then run the frontend dev server"
 	@echo "  make stop-web   - kill whatever is listening on port $(WEB_PORT)"
 	@echo "  make phantom-key - recover a Solana CLI keypair file from a seed phrase"
@@ -35,8 +40,31 @@ build:
 test: build
 	cargo test
 
+# If a validator (or just an orphaned faucet from a previous one) is
+# already bound to the RPC or faucet port, `solana-test-validator` fails
+# outright ("Address already in use") instead of attaching to it. Detect
+# that first and attach instead of erroring -- and make the attached
+# session behave exactly like a freshly started foreground one: Ctrl-C
+# here stops the real validator (via its pid, not just this recipe's own
+# `tail`), the same as if it had never been detached from a terminal in
+# the first place.
+#
+# No --reset by default any more: starting fresh now resumes whatever
+# ledger is already in test-ledger/ instead of silently wiping it. Pass
+# RESET=1 to wipe it deliberately (e.g. after a program schema change).
+RESET ?=
+
 validator:
-	solana-test-validator --reset
+	@pid=$$( (lsof -ti tcp:8899; lsof -ti tcp:9900) 2>/dev/null | sort -u | tr '\n' ' '); \
+	if [ -n "$$pid" ]; then \
+		echo "Attaching to already-running validator (pid(s): $$pid). Ctrl-C stops it, same as if it had just been started here."; \
+		curl -s -X POST -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","id":1,"method":"getHealth"}' http://localhost:8899; \
+		echo; \
+		trap 'echo; echo "Stopping validator (pid(s): $$pid)..."; kill $$pid 2>/dev/null; exit 0' INT; \
+		tail -f test-ledger/validator.log; \
+	else \
+		solana-test-validator $(if $(RESET),--reset,); \
+	fi
 
 deploy: build
 	anchor deploy
@@ -57,6 +85,12 @@ deploy-as: build
 
 airdrop:
 	solana airdrop 2 --url localhost
+
+# Bootstraps the chain: creates Config and grants the caller (the wallet at
+# PHANTOM_KEY_PATH, same file `make phantom-key` writes) all 4 roles
+# atomically. Needs a validator with this program already deployed.
+provision:
+	cd app && npm run provision
 
 # Uses `anchor idl build`, which compiles the idl-build feature via
 # `cargo test` (host target) rather than `cargo build-sbf` — it never
