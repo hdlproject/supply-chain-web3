@@ -1,29 +1,49 @@
+import type { Metadata } from "next";
+
 import { fetchAllProducts, fetchBatchesBySource } from "@/lib/accounts";
 import { requireRole } from "@/lib/guard";
 import { BatchTable } from "@/components/BatchTable";
-import { NavBar } from "@/components/NavBar";
+import { CardHeader } from "@/components/CardHeader";
+import { PageHeader, Stats } from "@/components/PageHeader";
 
 import { RegisterBatchForm } from "./RegisterBatchForm";
 
+export const metadata: Metadata = { title: "Source" };
+
 export default async function SourcePage() {
   const session = await requireRole("Source");
-  const batches = await fetchBatchesBySource(session.wallet);
-  const products = await fetchAllProducts();
+  const [batches, products] = await Promise.all([
+    fetchBatchesBySource(session.wallet),
+    fetchAllProducts(),
+  ]);
+  const inTransit = batches.filter(({ account }) => "inTransit" in account.status).length;
+  const delivered = batches.filter(({ account }) => "delivered" in account.status).length;
 
   return (
-    <div>
-      <NavBar roles={session.roles} activeRole="Source" wallet={session.wallet} />
-      <div className="page layout-split">
-        <div className="panel-narrow card">
-          <div className="section-title">Register batch</div>
-          <div className="section-sub">register_batch(id, source_type, line_item_count)</div>
+    <div className="page">
+      <PageHeader
+        eyebrow="Source"
+        title="Source dashboard"
+        description="Register the batches you send out, then follow them downstream."
+      />
+
+      <Stats
+        items={[
+          { label: "Your batches", value: batches.length, tone: "cyan" },
+          { label: "In transit", value: inTransit, tone: "amber" },
+          { label: "Delivered", value: delivered, tone: "accent" },
+        ]}
+      />
+
+      <div className="layout-split">
+        <div className="card">
+          <CardHeader title="Register batch" call="register_batch(…)" />
           <RegisterBatchForm
             products={products.map((p) => ({ skuCode: p.account.skuCode, name: p.account.name }))}
           />
         </div>
-        <div className="panel-wide card">
-          <div className="section-title">Batches you&apos;ve registered</div>
-          <div className="section-sub">Only this account&apos;s registrations</div>
+        <div className="card panel-wide">
+          <CardHeader title="Your batches" description="Only batches registered by this wallet." />
           <BatchTable batches={batches} showSource={false} />
         </div>
       </div>

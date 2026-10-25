@@ -1,44 +1,58 @@
+import type { Metadata } from "next";
+
 import { fetchAllProducts } from "@/lib/accounts";
 import { requireSession } from "@/lib/guard";
-import { NavBar } from "@/components/NavBar";
+import { CardHeader } from "@/components/CardHeader";
+import { PageHeader, Stats } from "@/components/PageHeader";
 
 import { RegisterProductForm } from "./RegisterProductForm";
 
+export const metadata: Metadata = { title: "Products" };
+
 export default async function ProductsPage() {
-  const session = await requireSession();
+  await requireSession();
   const products = await fetchAllProducts();
 
   return (
-    <div>
-      <NavBar roles={session.roles} activeRole={session.roles[0]} wallet={session.wallet} />
-      <div className="page layout-split">
-        <div className="panel-narrow card">
-          <div className="section-title">Register product</div>
-          <div className="section-sub">register_product(sku_code, name)</div>
-          <RegisterProductForm />
+    <div className="page">
+      <PageHeader
+        eyebrow="Catalog"
+        title="Product catalog"
+        description="A shared list of SKUs. Anyone can add one; every batch picks its products from here."
+      />
+
+      <Stats items={[{ label: "Registered SKUs", value: products.length, tone: "violet" }]} />
+
+      <div className="layout-split">
+        <div className="card">
+          <CardHeader title="Register product" call="register_product(sku, name)" />
+          <RegisterProductForm existingSkuCodes={products.map(({ account }) => account.skuCode)} />
         </div>
-        <div className="panel-wide card">
-          <div className="section-title">Product catalog</div>
-          <div className="section-sub">Shared across every account — pick any of these when building a batch</div>
+        <div className="card panel-wide">
+          <CardHeader title="Catalog" description="Shared across every account." />
           {products.length === 0 ? (
             <div className="empty-state">No products registered yet.</div>
           ) : (
-            <table>
-              <thead>
-                <tr>
-                  <th>SKU code</th>
-                  <th>Name</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map(({ publicKey, account }) => (
-                  <tr key={publicKey.toBase58()}>
-                    <td className="mono">{account.skuCode}</td>
-                    <td>{account.name}</td>
+            <div className="table-wrap">
+              <table className="table-responsive">
+                <thead>
+                  <tr>
+                    <th>SKU code</th>
+                    <th>Name</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {products.map(({ publicKey, account }) => (
+                    <tr key={publicKey.toBase58()}>
+                      <td data-label="SKU code" className="mono">
+                        {account.skuCode}
+                      </td>
+                      <td data-label="Name">{account.name}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>

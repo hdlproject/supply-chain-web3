@@ -5,6 +5,7 @@ import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import type { WalletError } from "@solana/wallet-adapter-base";
 
+import { ToastProvider } from "@/components/Toast";
 import { getRpcUrl } from "@/lib/program";
 
 import "@solana/wallet-adapter-react-ui/styles.css";
@@ -27,7 +28,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ConnectionProvider endpoint={endpoint}>
       <WalletProvider wallets={[]} autoConnect={true} onError={onWalletError}>
-        <WalletModalProvider>{children}</WalletModalProvider>
+        <WalletModalProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
   );

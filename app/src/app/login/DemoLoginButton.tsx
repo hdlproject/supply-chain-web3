@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 
+import { RoleIcon } from "@/components/icons";
 import type { DemoRole } from "@/lib/demo-accounts";
 import { useWalletSignIn } from "@/lib/use-wallet-sign-in";
 
@@ -41,20 +42,28 @@ export function DemoLoginButton({ role, description }: { role: DemoRole; descrip
 
   return (
     <div>
-      <button type="button" className="btn btn-outline btn-block" onClick={handleClick} disabled={pending}>
-        <span>
-          <span style={{ display: "block", fontWeight: 600 }}>
-            {pending ? `Signing in as ${role}…` : `Demo login as ${role}`}
-          </span>
-          <span
-            style={{ display: "block", fontSize: 12, color: "var(--muted)", fontWeight: 400, marginTop: 2 }}
-          >
-            {description}
-          </span>
+      <button type="button" className="role-tile" onClick={handleClick} disabled={pending}>
+        <span className="role-tile-icon">
+          <RoleIcon role={role} />
         </span>
-        <span style={{ color: "var(--muted)" }}>→</span>
+        <span className="role-tile-text">
+          <span className="role-tile-title">
+            {pending ? (
+              <>
+                <span className="spinner" aria-hidden="true" /> Signing in…
+              </>
+            ) : (
+              role
+            )}
+          </span>
+          <span className="role-tile-desc">{description}</span>
+        </span>
       </button>
-      {error ? <div className="field-error">{error}</div> : null}
+      {error ? (
+        <div className="field-error" style={{ marginTop: 8 }}>
+          {error}
+        </div>
+      ) : null}
     </div>
   );
 }

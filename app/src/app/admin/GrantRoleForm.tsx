@@ -1,14 +1,27 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
+import { Button } from "@/components/Button";
+import { Select } from "@/components/Select";
+import { useToast } from "@/components/Toast";
 import { useWalletGatedAction } from "@/lib/use-wallet-gated-action";
 
 import { grantRole } from "./actions";
 
+const ROLE_OPTIONS = [
+  { value: "Admin", label: "Admin" },
+  { value: "Source", label: "Source" },
+  { value: "Carrier", label: "Carrier" },
+  { value: "Restaurant", label: "Restaurant" },
+];
+
 export function GrantRoleForm() {
   const router = useRouter();
+  const toast = useToast();
+  const formRef = useRef<HTMLFormElement>(null);
+  const [role, setRole] = useState<"Admin" | "Source" | "Carrier" | "Restaurant">("Source");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -16,22 +29,25 @@ export function GrantRoleForm() {
     setPending(true);
     setError(null);
     const walletInput = String(formData.get("wallet") ?? "");
-    const role = String(formData.get("role") ?? "") as
-      | "Admin"
-      | "Source"
-      | "Carrier"
-      | "Restaurant";
     const result = await grantRole(wallet, walletInput, role);
     setPending(false);
     if (result.error) {
       setError(result.error);
       return;
     }
+    formRef.current?.reset();
+    toast.success(`${role} role granted`);
     router.refresh();
   });
 
   return (
-    <form action={handleSubmit}>
+    <form
+      ref={formRef}
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleSubmit(new FormData(e.currentTarget));
+      }}
+    >
       <div className="field">
         <label htmlFor="grant-wallet">Wallet address</label>
         <input
@@ -39,23 +55,25 @@ export function GrantRoleForm() {
           name="wallet"
           className="mono"
           type="text"
-          placeholder="9pL4...c22Z"
+          placeholder="Paste a Solana address"
+          autoComplete="off"
+          spellCheck={false}
           required
         />
       </div>
       <div className="field">
         <label htmlFor="grant-role">Role</label>
-        <select id="grant-role" name="role" required defaultValue="Source">
-          <option value="Admin">Admin</option>
-          <option value="Source">Source</option>
-          <option value="Carrier">Carrier</option>
-          <option value="Restaurant">Restaurant</option>
-        </select>
+        <Select
+          id="grant-role"
+          value={role}
+          onChange={(value) => setRole(value as typeof role)}
+          options={ROLE_OPTIONS}
+        />
       </div>
       {error ? <div className="field-error">{error}</div> : null}
-      <button type="submit" className="btn btn-primary btn-block" disabled={pending}>
-        {pending ? "Granting…" : "Grant role"}
-      </button>
+      <Button type="submit" block pending={pending} pendingLabel="Granting…">
+        Grant role
+      </Button>
     </form>
   );
 }

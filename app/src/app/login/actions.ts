@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { PublicKey } from "@solana/web3.js";
 import nacl from "tweetnacl";
@@ -63,10 +64,14 @@ export async function verifyWalletLogin(
 
   await createSession({ wallet: wallet.toBase58(), roles });
   const preferred = expectedRole ?? ROLE_ORDER.find((role) => roles.includes(role))!;
+  // The header lives in the root layout, which otherwise persists across
+  // navigations — force it to re-render with the new session.
+  revalidatePath("/", "layout");
   redirect(roleHomePath(preferred));
 }
 
 export async function logoutAction() {
   await destroySession();
+  revalidatePath("/", "layout");
   redirect("/login");
 }

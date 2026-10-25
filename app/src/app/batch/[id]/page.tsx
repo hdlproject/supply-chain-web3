@@ -1,14 +1,22 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PublicKey } from "@solana/web3.js";
+import BN from "bn.js";
 
 import { fetchBatch, fetchLineItemsForBatch, fetchMovementsForBatch } from "@/lib/accounts";
 import { hexToBatchId, shortBatchId } from "@/lib/batch-id";
-import { formatTimestamp, shortWallet, sourceTypeLabel } from "@/lib/format";
+import { formatTimestamp, sourceTypeLabel } from "@/lib/format";
 import { requireSession } from "@/lib/guard";
 import { batchPda, getReadProgram } from "@/lib/program";
+import { AddressChip } from "@/components/AddressChip";
+import { CardHeader } from "@/components/CardHeader";
+import { ArrowLeftIcon } from "@/components/icons";
 import { MovementTimeline } from "@/components/MovementTimeline";
+import { Stats } from "@/components/PageHeader";
 import { StatusBadge } from "@/components/StatusBadge";
+
+export const metadata: Metadata = { title: "Batch" };
 
 export default async function BatchDetailPage({
   params,
@@ -38,107 +46,125 @@ export default async function BatchDetailPage({
     lineItems.map((item) => program.account.product.fetchNullable(item.product)),
   );
   const isReceived = !batch.receivedBy.equals(PublicKey.default);
+  const totalQuantity = lineItems.reduce((sum, item) => sum.add(item.quantity), new BN(0));
 
   return (
-    <div>
-      <div className="navbar">
-        <Link href="/" className="brand">
-          <span className="dot" />
-          ChainTrace
-        </Link>
-        <Link href="/" style={{ color: "#c9c7bf", fontSize: 13 }}>
-          ← Back to dashboard
-        </Link>
-      </div>
-      <div className="page layout-split">
-        <div className="panel-narrow" style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <div className="card">
-            <div className="mono" style={{ fontSize: 13, color: "var(--muted-2)", marginBottom: 6 }}>
-              Batch {shortBatchId(id)}
-            </div>
-            <StatusBadge status={batch.status} />
-          </div>
+    <div className="page">
+      <Link href="/" className="back-link">
+        <ArrowLeftIcon small /> Back to dashboard
+      </Link>
 
+      <header className="page-header">
+        <div>
+          <div className="eyebrow">Batch</div>
+          <h1 className="mono" style={{ letterSpacing: "-0.02em" }}>
+            {shortBatchId(id)}
+          </h1>
+          <p className="page-header-sub" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            Full ID <AddressChip address={id} label="Batch ID" />
+          </p>
+        </div>
+        <StatusBadge status={batch.status} />
+      </header>
+
+      <Stats
+        items={[
+          { label: "Products", value: lineItems.length, tone: "violet" },
+          { label: "Total quantity", value: totalQuantity.toString(), tone: "cyan" },
+          { label: "Movements", value: movements.length, tone: "amber" },
+        ]}
+      />
+
+      <div className="layout-split">
+        <div className="stack">
           <div className="card">
-            <div className="section-title" style={{ marginBottom: 16 }}>
-              Batch fields
-            </div>
-            <div className="field-grid">
+            <CardHeader title="Details" />
+            <dl className="kv">
               <div>
-                <div className="section-sub" style={{ marginBottom: 4 }}>
-                  Source type
-                </div>
-                <div style={{ fontWeight: 600 }}>{sourceTypeLabel(batch.sourceType)}</div>
+                <dt>Source type</dt>
+                <dd>{sourceTypeLabel(batch.sourceType)}</dd>
+              </div>
+              <div>
+                <dt>Registered</dt>
+                <dd>{formatTimestamp(batch.createdAt)}</dd>
               </div>
               <div className="span-2">
-                <div className="section-sub" style={{ marginBottom: 4 }}>
-                  Registered by
-                </div>
-                <div className="mono" style={{ fontWeight: 600 }}>
-                  {shortWallet(batch.source)}
-                </div>
-              </div>
-              <div className="span-2">
-                <div className="section-sub" style={{ marginBottom: 4 }}>
-                  Registered at
-                </div>
-                <div>{formatTimestamp(batch.createdAt)}</div>
+                <dt>Registered by</dt>
+                <dd>
+                  <AddressChip address={batch.source.toBase58()} label="Registered by" />
+                </dd>
               </div>
               {isReceived ? (
                 <>
                   <div className="span-2">
-                    <div className="section-sub" style={{ marginBottom: 4 }}>
-                      Received by
-                    </div>
-                    <div className="mono" style={{ fontWeight: 600 }}>
-                      {shortWallet(batch.receivedBy)}
-                    </div>
+                    <dt>Received by</dt>
+                    <dd>
+                      <AddressChip address={batch.receivedBy.toBase58()} label="Received by" />
+                    </dd>
                   </div>
                   <div className="span-2">
-                    <div className="section-sub" style={{ marginBottom: 4 }}>
-                      Delivered at
-                    </div>
-                    <div>{formatTimestamp(batch.deliveredAt)}</div>
+                    <dt>Delivered</dt>
+                    <dd>{formatTimestamp(batch.deliveredAt)}</dd>
                   </div>
                 </>
               ) : null}
-            </div>
+            </dl>
           </div>
 
           <div className="card">
-            <div className="section-title" style={{ marginBottom: 16 }}>
-              Products in this batch
-            </div>
+            <CardHeader title="Products in this batch" />
             {lineItems.length === 0 ? (
               <div className="empty-state">No products on this batch.</div>
             ) : (
-              <table>
-                <thead>
-                  <tr>
-                    <th>SKU code</th>
-                    <th>Name</th>
-                    <th>Quantity</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lineItems.map((item, i) => (
-                    <tr key={item.index}>
-                      <td className="mono">{products[i]?.skuCode ?? "—"}</td>
-                      <td>{products[i]?.name ?? "—"}</td>
-                      <td>{item.quantity.toString()}</td>
+              <div className="table-wrap">
+                <table className="table-responsive">
+                  <thead>
+                    <tr>
+                      <th>SKU code</th>
+                      <th>Name</th>
+                      <th>Quantity</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {lineItems.map((item, i) => (
+                      <tr key={item.index}>
+                        <td data-label="SKU code" className="mono">
+                          {products[i]?.skuCode ?? "—"}
+                        </td>
+                        <td data-label="Name">{products[i]?.name ?? "—"}</td>
+                        <td data-label="Quantity" style={{ fontVariantNumeric: "tabular-nums" }}>
+                          {item.quantity.toString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>
 
-        <div className="panel-wide card">
-          <div className="section-title" style={{ marginBottom: 20 }}>
-            Movement timeline
-          </div>
-          <MovementTimeline movements={movements} batch={batch} />
+        <div className="card panel-wide">
+          <CardHeader
+            title="Movement timeline"
+            description="Every handoff recorded on-chain, oldest first."
+          />
+          <MovementTimeline
+            movements={movements.map((m) => ({
+              carrier: m.carrier.toBase58(),
+              fromLocation: m.fromLocation,
+              toLocation: m.toLocation,
+              vehicleId: m.vehicleId ?? null,
+              timestamp: m.timestamp.toNumber(),
+            }))}
+            batch={{
+              source: batch.source.toBase58(),
+              sourceType: batch.sourceType,
+              createdAt: batch.createdAt.toNumber(),
+              receivedBy: isReceived ? batch.receivedBy.toBase58() : null,
+              deliveredAt: isReceived ? batch.deliveredAt.toNumber() : null,
+            }}
+          />
         </div>
       </div>
     </div>
