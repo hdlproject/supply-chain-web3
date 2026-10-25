@@ -37,7 +37,22 @@ export function getProgramId(): PublicKey {
 }
 
 export function getConnection(): Connection {
-  return new Connection(getRpcUrl(), "confirmed");
+  return new Connection(getRpcUrl(), {
+    commitment: "confirmed",
+    // Next.js's App Router patches the global `fetch` and caches calls
+    // made during Server Component rendering by default -- @solana/web3.js
+    // makes every RPC call via `fetch` under the hood, so without this
+    // override, on-chain reads get silently served from a stale cache
+    // (sometimes indefinitely) regardless of what actually changed
+    // on-chain. `fetchMiddleware` is this library's own hook for
+    // injecting fetch options; forcing `cache: "no-store"` here opts
+    // every RPC call for every caller of getConnection() out of that
+    // cache in one place, rather than needing every read helper to
+    // remember to do it individually.
+    fetchMiddleware: (info, init, fetch) => {
+      fetch(info, { ...init, cache: "no-store" });
+    },
+  });
 }
 
 // The runtime IDL on disk is snake_case (matches the Rust source); the
