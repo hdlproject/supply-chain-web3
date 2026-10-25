@@ -354,12 +354,6 @@ export type SupplyChainWeb3 = {
       ],
       "args": [
         {
-          "name": "courierId",
-          "type": {
-            "option": "string"
-          }
-        },
-        {
           "name": "vehicleId",
           "type": {
             "option": "string"
@@ -759,16 +753,11 @@ export type SupplyChainWeb3 = {
     },
     {
       "code": 6003,
-      "name": "invalidMovementInput",
-      "msg": "courier_id and vehicle_id must both be set or both be empty"
-    },
-    {
-      "code": 6004,
       "name": "roleNotHeld",
       "msg": "Wallet does not hold the role being revoked"
     },
     {
-      "code": 6005,
+      "code": 6004,
       "name": "lineItemIndexOutOfRange",
       "msg": "Line item index is not less than the batch's declared line_item_count"
     }
@@ -896,12 +885,6 @@ export type SupplyChainWeb3 = {
           {
             "name": "carrier",
             "type": "pubkey"
-          },
-          {
-            "name": "courierId",
-            "type": {
-              "option": "string"
-            }
           },
           {
             "name": "vehicleId",

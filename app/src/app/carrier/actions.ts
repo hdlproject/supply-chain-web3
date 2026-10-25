@@ -8,7 +8,6 @@ export async function logMovement(
   wallet: SigningWallet,
   batchHex: string,
   isTransit: boolean,
-  courierId: string,
   vehicleId: string,
   fromLocation: string,
   toLocation: string,
@@ -22,11 +21,11 @@ export async function logMovement(
   if (!fromLocation || fromLocation.length > 64 || !toLocation || toLocation.length > 64) {
     return { error: "From/to location are required and must be 64 characters or fewer." };
   }
-  if (isTransit && (!courierId || !vehicleId)) {
-    return { error: "Courier ID and vehicle ID are required for a transit stop." };
+  if (isTransit && !vehicleId) {
+    return { error: "Vehicle ID is required for a transit stop." };
   }
-  if (courierId.length > 32 || vehicleId.length > 32) {
-    return { error: "Courier ID and vehicle ID must be 32 characters or fewer." };
+  if (vehicleId.length > 32) {
+    return { error: "Vehicle ID must be 32 characters or fewer." };
   }
 
   const program = getProgramForWallet(wallet);
@@ -43,7 +42,7 @@ export async function logMovement(
     // itself isn't a PDA the client can derive (it has no `batchId` arg to
     // key off here), so it must be supplied explicitly.
     await program.methods
-      .logMovement(isTransit ? courierId : null, isTransit ? vehicleId : null, fromLocation, toLocation)
+      .logMovement(isTransit ? vehicleId : null, fromLocation, toLocation)
       .accounts({ carrier: wallet.publicKey, batch })
       .rpc();
   } catch (error) {

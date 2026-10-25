@@ -10,8 +10,6 @@ pub enum ErrorCode {
 
     #[msg("Batch has already been delivered")]
     InvalidStatusTransition,
-    #[msg("courier_id and vehicle_id must both be set or both be empty")]
-    InvalidMovementInput,
     #[msg("Wallet does not hold the role being revoked")]
     RoleNotHeld,
     #[msg("Line item index is not less than the batch's declared line_item_count")]

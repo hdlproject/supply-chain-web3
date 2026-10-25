@@ -157,7 +157,6 @@ fn test_log_movement_transit_then_warehouse_stop() {
     let instruction = Instruction::new_with_bytes(
         program_id,
         &supply_chain_web3::instruction::LogMovement {
-            courier_id: Some("COURIER-1".to_string()),
             vehicle_id: Some("VEHICLE-1".to_string()),
             from_location: "Traditional Market".to_string(),
             to_location: "Transit Hub".to_string(),
@@ -181,7 +180,7 @@ fn test_log_movement_transit_then_warehouse_stop() {
     let mut data: &[u8] = &movement_account.data;
     let movement_state = Movement::try_deserialize(&mut data).unwrap();
     assert_eq!(movement_state.batch, batch);
-    assert_eq!(movement_state.courier_id, Some("COURIER-1".to_string()));
+    assert_eq!(movement_state.carrier, carrier.pubkey());
     assert_eq!(movement_state.vehicle_id, Some("VEHICLE-1".to_string()));
 
     let batch_account = svm.get_account(&batch).unwrap();
@@ -195,7 +194,6 @@ fn test_log_movement_transit_then_warehouse_stop() {
     let instruction = Instruction::new_with_bytes(
         program_id,
         &supply_chain_web3::instruction::LogMovement {
-            courier_id: None,
             vehicle_id: None,
             from_location: "Transit Hub".to_string(),
             to_location: "Central Warehouse".to_string(),
@@ -245,7 +243,6 @@ fn test_log_movement_rejects_wrong_role() {
     let instruction = Instruction::new_with_bytes(
         program_id,
         &supply_chain_web3::instruction::LogMovement {
-            courier_id: Some("COURIER-1".to_string()),
             vehicle_id: Some("VEHICLE-1".to_string()),
             from_location: "A".to_string(),
             to_location: "B".to_string(),
@@ -267,51 +264,3 @@ fn test_log_movement_rejects_wrong_role() {
     assert!(res.is_err());
 }
 
-#[test]
-fn test_log_movement_rejects_mismatched_courier_vehicle() {
-    let (mut svm, admin) = new_svm_with_admin();
-    let admin_role = init_config(&mut svm, &admin);
-
-    let source = Keypair::new();
-    svm.airdrop(&source.pubkey(), 1_000_000_000).unwrap();
-    grant_role(&mut svm, &admin, admin_role, source.pubkey(), Role::Source);
-    let batch = register_batch(&mut svm, &source, [5u8; 16]);
-
-    let carrier = Keypair::new();
-    svm.airdrop(&carrier.pubkey(), 1_000_000_000).unwrap();
-    grant_role(&mut svm, &admin, admin_role, carrier.pubkey(), Role::Carrier);
-
-    let program_id = supply_chain_web3::id();
-    let carrier_role = Pubkey::find_program_address(
-        &[
-            supply_chain_web3::constants::ROLE_SEED,
-            carrier.pubkey().as_ref(),
-        ],
-        &program_id,
-    )
-    .0;
-    let movement_0 = movement_pda(batch, 0);
-    let instruction = Instruction::new_with_bytes(
-        program_id,
-        &supply_chain_web3::instruction::LogMovement {
-            courier_id: Some("COURIER-1".to_string()),
-            vehicle_id: None,
-            from_location: "A".to_string(),
-            to_location: "B".to_string(),
-        }
-        .data(),
-        supply_chain_web3::accounts::LogMovement {
-            carrier: carrier.pubkey(),
-            role_assignment: carrier_role,
-            batch,
-            movement: movement_0,
-            system_program: system_program::ID,
-        }
-        .to_account_metas(None),
-    );
-    let blockhash = svm.latest_blockhash();
-    let msg = Message::new_with_blockhash(&[instruction], Some(&carrier.pubkey()), &blockhash);
-    let tx = VersionedTransaction::try_new(VersionedMessage::Legacy(msg), &[&carrier]).unwrap();
-    let res = svm.send_transaction(tx);
-    assert!(res.is_err());
-}

@@ -318,8 +318,8 @@ fn test_revoke_role_rejects_a_role_the_wallet_does_not_hold() {
     let err = res.unwrap_err().err;
     assert_eq!(
         err,
-        TransactionError::InstructionError(0, InstructionError::Custom(6004)),
-        "expected RoleNotHeld (custom error 6004), got {err:?}"
+        TransactionError::InstructionError(0, InstructionError::Custom(6003)),
+        "expected RoleNotHeld (custom error 6003), got {err:?}"
     );
 
     // Source, which WAS granted, must be untouched by the rejected revoke.

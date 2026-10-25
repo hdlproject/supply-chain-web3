@@ -79,8 +79,6 @@ pub struct Movement {
     pub batch: Pubkey,
     pub carrier: Pubkey,
     #[max_len(MAX_ID_LEN)]
-    pub courier_id: Option<String>,
-    #[max_len(MAX_ID_LEN)]
     pub vehicle_id: Option<String>,
     #[max_len(MAX_LOCATION_LEN)]
     pub from_location: String,

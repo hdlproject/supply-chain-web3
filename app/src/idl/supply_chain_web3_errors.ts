@@ -3,9 +3,8 @@ export const SupplyChainWeb3ErrorCode = {
   Unauthorized: 6000,
   StringTooLong: 6001,
   InvalidStatusTransition: 6002,
-  InvalidMovementInput: 6003,
-  RoleNotHeld: 6004,
-  LineItemIndexOutOfRange: 6005
+  RoleNotHeld: 6003,
+  LineItemIndexOutOfRange: 6004
 };
 
 export type SupplyChainWeb3ErrorName = keyof typeof SupplyChainWeb3ErrorCode;

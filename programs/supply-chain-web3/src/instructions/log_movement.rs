@@ -27,7 +27,6 @@ pub struct LogMovement<'info> {
 
 pub fn handle_log_movement(
     ctx: Context<LogMovement>,
-    courier_id: Option<String>,
     vehicle_id: Option<String>,
     from_location: String,
     to_location: String,
@@ -41,16 +40,9 @@ pub fn handle_log_movement(
         ErrorCode::InvalidStatusTransition,
     );
     require!(
-        courier_id.is_some() == vehicle_id.is_some(),
-        ErrorCode::InvalidMovementInput,
-    );
-    require!(
         from_location.len() <= MAX_LOCATION_LEN && to_location.len() <= MAX_LOCATION_LEN,
         ErrorCode::StringTooLong,
     );
-    if let Some(ref id) = courier_id {
-        require!(id.len() <= MAX_ID_LEN, ErrorCode::StringTooLong);
-    }
     if let Some(ref id) = vehicle_id {
         require!(id.len() <= MAX_ID_LEN, ErrorCode::StringTooLong);
     }
@@ -58,7 +50,6 @@ pub fn handle_log_movement(
     let movement = &mut ctx.accounts.movement;
     movement.batch = ctx.accounts.batch.key();
     movement.carrier = ctx.accounts.carrier.key();
-    movement.courier_id = courier_id;
     movement.vehicle_id = vehicle_id;
     movement.from_location = from_location;
     movement.to_location = to_location;

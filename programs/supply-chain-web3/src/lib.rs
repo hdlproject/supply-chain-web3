@@ -56,14 +56,12 @@ pub mod supply_chain_web3 {
 
     pub fn log_movement(
         ctx: Context<LogMovement>,
-        courier_id: Option<String>,
         vehicle_id: Option<String>,
         from_location: String,
         to_location: String,
     ) -> Result<()> {
         crate::instructions::log_movement::handle_log_movement(
             ctx,
-            courier_id,
             vehicle_id,
             from_location,
             to_location,

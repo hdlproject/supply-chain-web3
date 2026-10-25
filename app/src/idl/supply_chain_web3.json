@@ -348,12 +348,6 @@
       ],
       "args": [
         {
-          "name": "courier_id",
-          "type": {
-            "option": "string"
-          }
-        },
-        {
           "name": "vehicle_id",
           "type": {
             "option": "string"
@@ -753,16 +747,11 @@
     },
     {
       "code": 6003,
-      "name": "InvalidMovementInput",
-      "msg": "courier_id and vehicle_id must both be set or both be empty"
-    },
-    {
-      "code": 6004,
       "name": "RoleNotHeld",
       "msg": "Wallet does not hold the role being revoked"
     },
     {
-      "code": 6005,
+      "code": 6004,
       "name": "LineItemIndexOutOfRange",
       "msg": "Line item index is not less than the batch's declared line_item_count"
     }
@@ -890,12 +879,6 @@
           {
             "name": "carrier",
             "type": "pubkey"
-          },
-          {
-            "name": "courier_id",
-            "type": {
-              "option": "string"
-            }
           },
           {
             "name": "vehicle_id",

@@ -317,7 +317,6 @@ fn test_log_movement_rejects_after_delivered() {
     let instruction = Instruction::new_with_bytes(
         program_id,
         &supply_chain_web3::instruction::LogMovement {
-            courier_id: None,
             vehicle_id: None,
             from_location: "Restaurant".to_string(),
             to_location: "Kitchen".to_string(),
@@ -396,7 +395,6 @@ fn test_full_lifecycle_register_move_receive() {
     let instruction = Instruction::new_with_bytes(
         program_id,
         &supply_chain_web3::instruction::LogMovement {
-            courier_id: None,
             vehicle_id: None,
             from_location: "Farm".to_string(),
             to_location: "Restaurant".to_string(),
